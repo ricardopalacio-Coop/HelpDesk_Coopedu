@@ -99,25 +99,36 @@ export default function Sidebar() {
       collapsed ? "w-20" : "w-64"
     )}>
       {/* Logo e Botão Toggle */}
-      <div className="flex h-20 items-center justify-between px-4 border-b border-white/10">
-        <div className="flex items-center gap-3 overflow-hidden">
-          <img 
-            src="/logo-coopedu.png" 
-            alt="Coopedu" 
-            className="h-10 w-auto brightness-0 invert flex-shrink-0"
-          />
-          {!collapsed && (
-            <span className="text-lg font-bold tracking-tight whitespace-nowrap">Helpdesk</span>
-          )}
-        </div>
+      <div className="relative border-b border-white/10">
+        {/* Botão Toggle */}
         <Button
           variant="ghost"
           size="icon"
-          className="flex-shrink-0 text-white hover:bg-white/10 h-8 w-8"
+          className="absolute top-3 right-3 text-white hover:bg-white/10 h-8 w-8 z-10"
           onClick={() => setCollapsed(!collapsed)}
         >
           {collapsed ? <ChevronRight className="h-5 w-5" /> : <ChevronLeft className="h-5 w-5" />}
         </Button>
+        
+        {/* Logo e Texto */}
+        {!collapsed ? (
+          <div className="flex flex-col items-center justify-center py-6 px-4">
+            <img 
+              src="/logo-coopedu.png" 
+              alt="Coopedu" 
+              className="h-16 w-auto brightness-0 invert mb-3"
+            />
+            <span className="text-xl font-bold tracking-tight whitespace-nowrap">Helpdesk</span>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center py-6">
+            <img 
+              src="/logo-coopedu.png" 
+              alt="Coopedu" 
+              className="h-12 w-auto brightness-0 invert"
+            />
+          </div>
+        )}
       </div>
 
       {/* Navegação */}

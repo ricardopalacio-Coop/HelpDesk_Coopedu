@@ -113,3 +113,6 @@
 - [x] Adicionar botão para encolher/expandir sidebar
 - [x] Implementar estado colapsado do menu (apenas ícones)
 - [x] Adicionar animação suave de transição
+
+## Ajuste de Layout
+- [x] Reorganizar header da sidebar com logo acima e texto "Helpdesk" abaixo
