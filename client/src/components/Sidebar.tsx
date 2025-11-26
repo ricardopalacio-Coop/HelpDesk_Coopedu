@@ -123,9 +123,9 @@ export default function Sidebar() {
         ) : (
           <div className="flex items-center justify-center py-6">
             <img 
-              src="/logo-coopedu.png" 
+              src="/favicon.png" 
               alt="Coopedu" 
-              className="h-12 w-auto brightness-0 invert"
+              className="h-12 w-12 object-contain"
             />
           </div>
         )}

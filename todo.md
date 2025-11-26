@@ -133,3 +133,8 @@
 - [x] Criar seção de mensagens rápidas nas Configurações
 - [x] Adicionar botão de mensagens rápidas no chat WhatsApp
 - [x] Implementar seleção e envio de mensagens rápidas
+
+## Atualização de Logo e Favicon
+- [x] Baixar favicon da Coopedu
+- [x] Trocar logo para favicon quando menu estiver recolhido
+- [x] Atualizar favicon da página no HTML
