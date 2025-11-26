@@ -107,3 +107,9 @@
 - [x] Adicionar animações e transições suaves
 - [x] Modernizar cards do dashboard com efeitos visuais
 - [x] Melhorar tipografia e espaçamentos
+
+## Melhorias no Menu Lateral
+- [x] Corrigir texto quebrado "Helpdesk" na logo
+- [x] Adicionar botão para encolher/expandir sidebar
+- [x] Implementar estado colapsado do menu (apenas ícones)
+- [x] Adicionar animação suave de transição
