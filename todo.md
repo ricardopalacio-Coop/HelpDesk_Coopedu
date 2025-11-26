@@ -87,3 +87,11 @@
 - [ ] Validar todas as funcionalidades
 - [ ] Criar checkpoint final
 - [ ] Preparar documentação de entrega
+
+## Importação de Dados
+- [x] Criar página de Configurações com importadores CSV
+- [x] Implementar importador de Cooperados via CSV
+- [x] Implementar importador de Contratos via CSV
+- [x] Criar modelos CSV de exemplo para download
+- [x] Adicionar validação de dados importados
+- [x] Exibir relatório de importação (sucessos e erros)

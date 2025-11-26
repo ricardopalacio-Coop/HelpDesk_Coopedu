@@ -608,3 +608,136 @@ export async function finishTimeTracking(id: number) {
     totalSeconds: record.totalSeconds + elapsed,
   }).where(eq(ticketTimeTracking.id, id));
 }
+
+
+// ==================== IMPORTAÇÃO EM MASSA ====================
+
+/**
+ * Importar cooperados em massa
+ */
+export async function bulkImportCooperados(data: Array<{
+  registrationNumber: string;
+  name: string;
+  document: string;
+  email?: string;
+  phone?: string;
+  birthDate?: Date;
+  admissionDate?: Date;
+  position?: string;
+  status: "ativo" | "inativo" | "sem_producao";
+  contractId?: number;
+}>) {
+  const dbClient = await getDb();
+  if (!dbClient) throw new Error("Database not available");
+
+  const results = {
+    success: 0,
+    errors: [] as Array<{ row: number; error: string; data: any }>,
+  };
+
+  for (let i = 0; i < data.length; i++) {
+    try {
+      const row = data[i];
+      if (!row) continue;
+
+      // Validar campos obrigatórios
+      if (!row.registrationNumber || !row.name || !row.document) {
+        results.errors.push({
+          row: i + 1,
+          error: "Campos obrigatórios faltando (matrícula, nome ou documento)",
+          data: row,
+        });
+        continue;
+      }
+
+      // Inserir cooperado
+      const [result] = await dbClient.insert(cooperados).values({
+        registrationNumber: row.registrationNumber,
+        name: row.name,
+        document: row.document,
+        email: row.email || null,
+        birthDate: row.birthDate || null,
+        admissionDate: row.admissionDate || null,
+        position: row.position || null,
+        status: row.status || "ativo",
+        contractId: row.contractId || null,
+      });
+
+      // Se tem telefone, inserir também
+      if (row.phone && result?.insertId) {
+        const cooperadoId = Number(result.insertId);
+        await dbClient.insert(cooperadoPhones).values({
+          cooperadoId,
+          phone: row.phone,
+          phoneType: "principal",
+          isActive: true,
+        });
+      }
+
+      results.success++;
+    } catch (error: any) {
+      results.errors.push({
+        row: i + 1,
+        error: error.message || "Erro desconhecido",
+        data: data[i],
+      });
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Importar contratos em massa
+ */
+export async function bulkImportContracts(data: Array<{
+  name: string;
+  status: "ativo" | "inativo";
+  validityDate?: Date;
+}>) {
+  const dbClient = await getDb();
+  if (!dbClient) throw new Error("Database not available");
+
+  const results = {
+    success: 0,
+    errors: [] as Array<{ row: number; error: string; data: any }>,
+  };
+
+  for (let i = 0; i < data.length; i++) {
+    try {
+      const row = data[i];
+      if (!row) continue;
+
+      // Validar campos obrigatórios
+      if (!row.name) {
+        results.errors.push({
+          row: i + 1,
+          error: "Nome do contrato é obrigatório",
+          data: row,
+        });
+        continue;
+      }
+
+      await dbClient.insert(contracts).values({
+        name: row.name,
+        status: row.status || "ativo",
+        validityDate: row.validityDate || null,
+        isSpecial: false,
+      });
+
+      results.success++;
+    } catch (error: any) {
+      results.errors.push({
+        row: i + 1,
+        error: error.message || "Erro desconhecido",
+        data: data[i],
+      });
+    }
+  }
+
+  return results;
+}
+
+// Nota: Importação de usuários não é suportada via CSV
+// Os usuários são criados automaticamente no primeiro login via Manus OAuth
+// Apenas cooperados e contratos podem ser importados em massa

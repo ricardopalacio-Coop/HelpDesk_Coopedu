@@ -19,6 +19,8 @@ export async function initializeWhatsApp() {
 
   console.log("[WhatsApp] Inicializando cliente...");
 
+  try {
+
   whatsappClient = new Client({
     authStrategy: new LocalAuth({
       clientId: "helpdesk-coopedu",
@@ -128,8 +130,14 @@ export async function initializeWhatsApp() {
     }
   });
 
-  // Inicializar cliente
-  await whatsappClient.initialize();
+    // Inicializar cliente
+    await whatsappClient.initialize();
+  } catch (error) {
+    console.error("[WhatsApp] Erro ao inicializar cliente:", error);
+    connectionStatus = "disconnected";
+    whatsappClient = null;
+    throw new Error("Erro ao inicializar WhatsApp. Verifique se o Chromium está instalado corretamente.");
+  }
 }
 
 /**
