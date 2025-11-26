@@ -116,3 +116,11 @@
 
 ## Ajuste de Layout
 - [x] Reorganizar header da sidebar com logo acima e texto "Helpdesk" abaixo
+
+## Reorganização Menu WhatsApp
+- [x] Mover item WhatsApp atual para dentro de Configurações como "Integrar WhatsApp"
+- [x] Criar novo menu "WhatsApp" abaixo de "Tickets"
+- [x] Desenvolver tela estilo WhatsApp Web para comunicação
+- [x] Implementar lista de conversas/contatos
+- [x] Implementar área de chat com mensagens
+- [ ] Integrar com backend WhatsApp existente

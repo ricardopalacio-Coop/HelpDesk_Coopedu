@@ -35,6 +35,12 @@ const navigation = [
     roles: ["admin", "gerente", "atendente"],
   },
   {
+    name: "WhatsApp",
+    href: "/whatsapp-chat",
+    icon: MessageSquare,
+    roles: ["admin", "gerente", "atendente"],
+  },
+  {
     name: "Cooperados",
     href: "/cooperados",
     icon: Users,
@@ -50,12 +56,6 @@ const navigation = [
     name: "Departamentos",
     href: "/departamentos",
     icon: Building2,
-    roles: ["admin"],
-  },
-  {
-    name: "WhatsApp",
-    href: "/whatsapp",
-    icon: MessageSquare,
     roles: ["admin"],
   },
   {

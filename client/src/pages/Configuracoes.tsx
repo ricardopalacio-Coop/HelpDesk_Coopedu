@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { trpc } from "@/lib/trpc";
-import { Upload, Download, FileText, AlertCircle, CheckCircle2 } from "lucide-react";
+import { Upload, Download, FileText, AlertCircle, CheckCircle2, MessageSquare } from "lucide-react";
+import { Link } from "wouter";
 import { useState, useRef } from "react";
 import Papa from "papaparse";
 import { toast } from "sonner";
@@ -129,8 +130,28 @@ Contrato Temporário,ativo,2024-06-30`;
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Configurações</h1>
-          <p className="text-muted-foreground">Importação em massa de dados via CSV</p>
+          <p className="text-muted-foreground">Gerencie as configurações do sistema e importação de dados</p>
         </div>
+
+        {/* Integrar WhatsApp */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MessageSquare className="h-5 w-5" />
+              Integrar WhatsApp
+            </CardTitle>
+            <CardDescription>
+              Configure a integração com WhatsApp para receber e enviar mensagens automaticamente
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Link href="/whatsapp">
+              <a className="inline-flex items-center text-[#00b7ff] hover:underline font-medium">
+                Acessar configurações do WhatsApp →
+              </a>
+            </Link>
+          </CardContent>
+        </Card>
 
         {/* Importar Cooperados */}
         <Card>
