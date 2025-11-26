@@ -90,15 +90,15 @@ export function Sidebar() {
   );
 
   return (
-    <div className="flex h-full w-64 flex-col border-r bg-card">
+    <div className="flex h-full w-64 flex-col border-r bg-gradient-to-b from-[#0c2856] to-[#005487] text-white shadow-xl">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6 gap-3">
+      <div className="flex h-20 items-center px-6 gap-3 border-b border-white/10">
         <img 
           src="/logo-coopedu.png" 
           alt="Coopedu" 
-          className="h-10 w-auto"
+          className="h-12 w-auto brightness-0 invert"
         />
-        <span className="text-lg font-semibold">Helpdesk</span>
+        <span className="text-xl font-bold tracking-tight">Helpdesk</span>
       </div>
 
       {/* Navegação */}
@@ -110,10 +110,10 @@ export function Sidebar() {
               <Link key={item.name} href={item.href}>
                 <div
                   className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors cursor-pointer",
+                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer",
                     isActive
-                      ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+                      ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                      : "text-white/70 hover:bg-white/10 hover:text-white"
                   )}
                 >
                   <item.icon className="h-5 w-5" />
@@ -126,23 +126,23 @@ export function Sidebar() {
       </ScrollArea>
 
       {/* Informações do usuário */}
-      <div className="border-t p-4">
+      <div className="border-t border-white/10 p-4">
         <div className="mb-3 flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary text-primary-foreground">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white font-semibold backdrop-blur-sm">
             {user?.name?.charAt(0).toUpperCase() || "U"}
           </div>
           <div className="flex-1 overflow-hidden">
-            <p className="truncate text-sm font-medium">{user?.name || "Usuário"}</p>
-            <p className="truncate text-xs text-muted-foreground capitalize">
+            <p className="truncate text-sm font-medium text-white">{user?.name || "Usuário"}</p>
+            <p className="truncate text-xs text-white/60 capitalize">
               {user?.role || "atendente"}
             </p>
           </div>
         </div>
-        <Separator className="mb-3" />
+        <Separator className="mb-3 bg-white/10" />
         <Button
           variant="outline"
           size="sm"
-          className="w-full justify-start"
+          className="w-full justify-start bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white transition-all duration-200"
           onClick={handleLogout}
           disabled={logoutMutation.isPending}
         >

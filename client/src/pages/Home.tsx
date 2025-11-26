@@ -21,32 +21,36 @@ export default function Home() {
       value: ticketsAbertos,
       description: "Em atendimento",
       icon: Ticket,
-      color: "text-blue-600",
-      bgColor: "bg-blue-100",
+      color: "text-[#005487]",
+      bgColor: "bg-[#005487]/10",
+      borderColor: "border-l-[#005487]",
     },
     {
       title: "Aguardando",
       value: ticketsAguardando,
       description: "Pendentes de resposta",
       icon: Clock,
-      color: "text-yellow-600",
-      bgColor: "bg-yellow-100",
+      color: "text-[#00b7ff]",
+      bgColor: "bg-[#00b7ff]/10",
+      borderColor: "border-l-[#00b7ff]",
     },
     {
       title: "Resolvidos",
       value: ticketsResolvidos,
       description: "Finalizados",
       icon: CheckCircle2,
-      color: "text-green-600",
-      bgColor: "bg-green-100",
+      color: "text-[#3ab54a]",
+      bgColor: "bg-[#3ab54a]/10",
+      borderColor: "border-l-[#3ab54a]",
     },
     {
       title: "Total de Tickets",
       value: ticketsTotal,
       description: "Todos os registros",
       icon: AlertCircle,
-      color: "text-gray-600",
-      bgColor: "bg-gray-100",
+      color: "text-[#0c2856]",
+      bgColor: "bg-[#0c2856]/10",
+      borderColor: "border-l-[#0c2856]",
     },
   ];
 
@@ -71,19 +75,19 @@ export default function Home() {
     <Layout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Visão geral do sistema de atendimento</p>
+        <div className="bg-gradient-to-r from-[#0c2856] to-[#005487] rounded-lg p-6 shadow-lg">
+          <h1 className="text-3xl font-bold tracking-tight text-white">Dashboard</h1>
+          <p className="text-white/80 mt-1">Visão geral do sistema de atendimento</p>
         </div>
 
         {/* Métricas de Tickets */}
-        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
           {stats.map((stat) => (
-            <Card key={stat.title}>
+            <Card key={stat.title} className={`border-l-4 ${stat.borderColor} shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <div className={`rounded-full p-2 ${stat.bgColor}`}>
-                  <stat.icon className={`h-4 w-4 ${stat.color}`} />
+                <div className={`rounded-lg p-2 ${stat.bgColor}`}>
+                  <stat.icon className={`h-5 w-5 ${stat.color}`} />
                 </div>
               </CardHeader>
               <CardContent>
@@ -91,8 +95,8 @@ export default function Home() {
                   <Skeleton className="h-8 w-16" />
                 ) : (
                   <>
-                    <div className="text-2xl font-bold">{stat.value}</div>
-                    <p className="text-xs text-muted-foreground">{stat.description}</p>
+                    <div className={`text-3xl font-bold ${stat.color}`}>{stat.value}</div>
+                    <p className="text-xs text-muted-foreground mt-1">{stat.description}</p>
                   </>
                 )}
               </CardContent>
@@ -101,12 +105,14 @@ export default function Home() {
         </div>
 
         {/* Outras Métricas */}
-        <div className="grid gap-4 md:grid-cols-2">
+        <div className="grid gap-6 md:grid-cols-2">
           {otherStats.map((stat) => (
-            <Card key={stat.title}>
+            <Card key={stat.title} className="shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
-                <stat.icon className="h-4 w-4 text-muted-foreground" />
+                <div className="p-2 bg-primary/10 rounded-lg">
+                  <stat.icon className="h-5 w-5 text-primary" />
+                </div>
               </CardHeader>
               <CardContent>
                 {stat.loading ? (
