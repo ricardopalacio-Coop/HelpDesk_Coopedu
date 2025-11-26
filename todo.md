@@ -124,3 +124,12 @@
 - [x] Implementar lista de conversas/contatos
 - [x] Implementar área de chat com mensagens
 - [ ] Integrar com backend WhatsApp existente
+
+## Melhorias WhatsApp Chat
+- [x] Tornar interface WhatsApp responsiva até o menu
+- [x] Adicionar botão de gravar áudio (UI pronto, backend pendente)
+- [ ] Implementar gravação e envio de áudio real
+- [ ] Adicionar função de reproduzir áudio recebido
+- [x] Criar seção de mensagens rápidas nas Configurações
+- [x] Adicionar botão de mensagens rápidas no chat WhatsApp
+- [x] Implementar seleção e envio de mensagens rápidas

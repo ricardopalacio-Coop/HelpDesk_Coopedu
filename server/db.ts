@@ -4,11 +4,12 @@ import {
   InsertUser, users, profiles, departments, cooperados, cooperadoPhones, 
   cooperadoBankData, contracts, attendanceReasons, tickets, ticketMessages,
   ticketHistory, ticketTimeTracking, csatSurveys, whatsappSessions as whatsappSessionsTable,
+  quickMessages,
   type InsertProfile, type InsertDepartment, type InsertCooperado,
   type InsertCooperadoPhone, type InsertCooperadoBankData, type InsertContract,
   type InsertAttendanceReason, type InsertTicket, type InsertTicketMessage,
   type InsertTicketHistory, type InsertTicketTimeTracking, type InsertCsatSurvey,
-  type InsertWhatsappSession
+  type InsertWhatsappSession, type InsertQuickMessage
 } from "../drizzle/schema";
 
 export { whatsappSessionsTable as whatsappSessions };
@@ -741,3 +742,33 @@ export async function bulkImportContracts(data: Array<{
 // Nota: Importação de usuários não é suportada via CSV
 // Os usuários são criados automaticamente no primeiro login via Manus OAuth
 // Apenas cooperados e contratos podem ser importados em massa
+
+// ==================== Quick Messages ====================
+
+export async function getQuickMessages() {
+  const db = await getDb();
+  if (!db) return [];
+  
+  return await db.select().from(quickMessages).where(eq(quickMessages.active, true));
+}
+
+export async function createQuickMessage(data: InsertQuickMessage) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.insert(quickMessages).values(data);
+}
+
+export async function updateQuickMessage(id: number, data: Partial<InsertQuickMessage>) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.update(quickMessages).set(data).where(eq(quickMessages.id, id));
+}
+
+export async function deleteQuickMessage(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(quickMessages).where(eq(quickMessages.id, id));
+}

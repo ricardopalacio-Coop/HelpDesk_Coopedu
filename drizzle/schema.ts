@@ -226,6 +226,20 @@ export const whatsappSessions = mysqlTable("whatsapp_sessions", {
 });
 
 // ============================================================================
+// MENSAGENS RÁPIDAS
+// ============================================================================
+
+export const quickMessages = mysqlTable("quick_messages", {
+  id: int("id").autoincrement().primaryKey(),
+  title: varchar("title", { length: 100 }).notNull(),
+  content: text("content").notNull(),
+  category: varchar("category", { length: 50 }),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+// ============================================================================
 // TYPES
 // ============================================================================
 
@@ -270,3 +284,6 @@ export type InsertCsatSurvey = typeof csatSurveys.$inferInsert;
 
 export type WhatsappSession = typeof whatsappSessions.$inferSelect;
 export type InsertWhatsappSession = typeof whatsappSessions.$inferInsert;
+
+export type QuickMessage = typeof quickMessages.$inferSelect;
+export type InsertQuickMessage = typeof quickMessages.$inferInsert;

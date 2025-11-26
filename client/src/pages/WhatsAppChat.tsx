@@ -1,10 +1,11 @@
 import React, { useState } from "react";
 import { Layout } from "@/components/Layout";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { trpc } from "@/lib/trpc";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Search, Send, Phone, Video, MoreVertical, Paperclip, Smile, MessageSquare } from "lucide-react";
+import { Search, Send, Phone, Video, MoreVertical, Paperclip, Smile, MessageSquare, Zap, Mic } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // Mock data para conversas
@@ -75,6 +76,10 @@ export default function WhatsAppChat() {
   const [selectedConversation, setSelectedConversation] = useState(mockConversations[1]);
   const [message, setMessage] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [showQuickMessages, setShowQuickMessages] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  
+  const { data: quickMessages } = trpc.quickMessages.list.useQuery();
 
   const filteredConversations = mockConversations.filter((conv) =>
     conv.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -91,9 +96,9 @@ export default function WhatsAppChat() {
 
   return (
     <Layout>
-      <div className="flex h-[calc(100vh-2rem)] bg-background">
+      <div className="flex flex-col md:flex-row h-[calc(100vh-2rem)] bg-background">
         {/* Lista de Conversas */}
-        <div className="w-[400px] border-r flex flex-col bg-card">
+        <div className="w-full md:w-[400px] border-r md:border-b-0 border-b flex flex-col bg-card max-h-[40vh] md:max-h-none">
           {/* Header da Lista */}
           <div className="p-4 border-b bg-[#005487]">
             <h2 className="text-lg font-semibold text-white mb-3">Conversas</h2>
@@ -211,27 +216,75 @@ export default function WhatsAppChat() {
             </ScrollArea>
 
             {/* Input de Mensagem */}
-            <div className="p-4 border-t bg-card flex items-center gap-2">
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Smile className="h-5 w-5" />
-              </Button>
-              <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
-                <Paperclip className="h-5 w-5" />
-              </Button>
-              <Input
-                placeholder="Digite uma mensagem..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                className="flex-1"
-              />
-              <Button
-                onClick={handleSendMessage}
-                className="bg-[#00b7ff] hover:bg-[#0095d9] text-white"
-                size="icon"
-              >
-                <Send className="h-5 w-5" />
-              </Button>
+            <div className="border-t bg-card">
+              {/* Mensagens Rápidas */}
+              {showQuickMessages && quickMessages && quickMessages.length > 0 && (
+                <div className="p-4 border-b max-h-48 overflow-y-auto">
+                  <div className="space-y-2">
+                    {quickMessages.map((qm: any) => (
+                      <button
+                        key={qm.id}
+                        onClick={() => {
+                          setMessage(qm.content);
+                          setShowQuickMessages(false);
+                        }}
+                        className="w-full text-left p-2 rounded hover:bg-accent transition-colors"
+                      >
+                        <p className="font-medium text-sm">{qm.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{qm.content}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Área de Input */}
+              <div className="p-4 flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <Smile className="h-5 w-5" />
+                </Button>
+                <Button variant="ghost" size="icon" className="text-muted-foreground hover:text-foreground">
+                  <Paperclip className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-muted-foreground hover:text-foreground"
+                  onClick={() => setShowQuickMessages(!showQuickMessages)}
+                >
+                  <Zap className="h-5 w-5" />
+                </Button>
+                <Input
+                  placeholder="Digite uma mensagem..."
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                  className="flex-1"
+                />
+                {message.trim() ? (
+                  <Button
+                    onClick={handleSendMessage}
+                    className="bg-[#00b7ff] hover:bg-[#0095d9] text-white"
+                    size="icon"
+                  >
+                    <Send className="h-5 w-5" />
+                  </Button>
+                ) : (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "text-muted-foreground hover:text-foreground",
+                      isRecording && "text-red-500 animate-pulse"
+                    )}
+                    onMouseDown={() => setIsRecording(true)}
+                    onMouseUp={() => setIsRecording(false)}
+                    onMouseLeave={() => setIsRecording(false)}
+                  >
+                    <Mic className="h-5 w-5" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         ) : (
