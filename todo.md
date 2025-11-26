@@ -44,19 +44,20 @@
 - [x] Implementar persistência de sessão WhatsApp
 
 ## Frontend (React + TailwindCSS)
-- [ ] Configurar tema e cores do sistema
-- [ ] Implementar DashboardLayout com sidebar
-- [ ] Criar página de login e autenticação
-- [ ] Criar página inicial com visão geral
-- [ ] Criar página de gestão de cooperados
-- [ ] Criar página de gestão de contratos
+- [x] Configurar tema e cores do sistema
+- [x] Implementar DashboardLayout com sidebar
+- [x] Criar página de login e autenticação (via Manus OAuth)
+- [x] Criar página inicial com visão geral
+- [x] Criar página de gestão de cooperados
+- [x] Criar página de gestão de contratos
 - [ ] Criar página de gestão de departamentos
 - [ ] Criar página de gestão de usuários
-- [ ] Criar página de listagem de tickets
+- [x] Criar página de listagem de tickets
 - [ ] Criar página de detalhes do ticket com mensagens
 - [ ] Criar componente de chat integrado com WhatsApp
 - [ ] Criar página de motivos de atendimento
 - [ ] Criar dashboard com gráficos e métricas
+- [x] Criar página de configuração do WhatsApp com QR Code
 - [ ] Implementar alertas visuais de SLA próximo ao vencimento
 - [ ] Criar página de relatórios e histórico
 
