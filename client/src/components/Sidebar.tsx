@@ -92,9 +92,13 @@ export function Sidebar() {
   return (
     <div className="flex h-full w-64 flex-col border-r bg-card">
       {/* Logo */}
-      <div className="flex h-16 items-center border-b px-6">
-        <MessageSquare className="h-6 w-6 text-primary" />
-        <span className="ml-2 text-lg font-semibold">Helpdesk Coopedu</span>
+      <div className="flex h-16 items-center border-b px-6 gap-3">
+        <img 
+          src="/logo-coopedu.png" 
+          alt="Coopedu" 
+          className="h-10 w-auto"
+        />
+        <span className="text-lg font-semibold">Helpdesk</span>
       </div>
 
       {/* Navegação */}

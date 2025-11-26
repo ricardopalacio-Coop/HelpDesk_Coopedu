@@ -56,15 +56,16 @@
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
+  /* Cores Coopedu - #0c2856 (azul escuro), #005487 (azul médio), #00b7ff (ciano), #3ab54a (verde) */
+  --primary: oklch(0.35 0.08 240); /* #005487 - azul médio */
+  --primary-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.20 0.06 240); /* #0c2856 - azul escuro */
+  --sidebar-primary-foreground: oklch(1 0 0);
+  --chart-1: oklch(0.35 0.08 240); /* #005487 */
+  --chart-2: oklch(0.65 0.15 220); /* #00b7ff */
+  --chart-3: oklch(0.65 0.12 145); /* #3ab54a */
+  --chart-4: oklch(0.20 0.06 240); /* #0c2856 */
+  --chart-5: oklch(0.75 0.15 60);
   --radius: 0.65rem;
   --background: oklch(1 0 0);
   --foreground: oklch(0.235 0.015 65);
@@ -90,12 +91,12 @@
   --sidebar-border: oklch(0.92 0.004 286.32);
   --sidebar-ring: oklch(0.623 0.214 259.815);
   
-  /* Status de tickets */
-  --status-aberto: oklch(0.65 0.2 220);
-  --status-em-andamento: oklch(0.75 0.15 150);
-  --status-aguardando: oklch(0.75 0.15 60);
-  --status-resolvido: oklch(0.55 0.15 150);
-  --status-fechado: oklch(0.55 0.01 262);
+  /* Status de tickets - usando cores Coopedu */
+  --status-aberto: oklch(0.35 0.08 240); /* azul médio */
+  --status-em-andamento: oklch(0.65 0.15 220); /* ciano */
+  --status-aguardando: oklch(0.75 0.15 60); /* amarelo */
+  --status-resolvido: oklch(0.65 0.12 145); /* verde */
+  --status-fechado: oklch(0.55 0.01 262); /* cinza */
   
   /* Prioridades */
   --priority-baixa: oklch(0.75 0.1 180);

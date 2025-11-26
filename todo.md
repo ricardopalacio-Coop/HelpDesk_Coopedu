@@ -95,3 +95,8 @@
 - [x] Criar modelos CSV de exemplo para download
 - [x] Adicionar validação de dados importados
 - [x] Exibir relatório de importação (sucessos e erros)
+
+## Identidade Visual
+- [x] Atualizar paleta de cores conforme padrão fornecido
+- [x] Adicionar logo da Coopedu no sistema
+- [x] Ajustar tema do sistema com novas cores
