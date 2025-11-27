@@ -65,7 +65,17 @@ export const cooperados: any = mysqlTable("cooperados", {
   status: mysqlEnum("status", ["ativo", "inativo", "sem_producao"]).default("ativo").notNull(),
   contractId: int("contractId").references(() => contracts.id),
   email: varchar("email", { length: 255 }),
-  address: text("address"),
+  // Telefones
+  whatsappNumber: varchar("whatsappNumber", { length: 20 }),
+  secondaryPhone: varchar("secondaryPhone", { length: 20 }),
+  // Endereço completo
+  street: varchar("street", { length: 255 }),
+  addressNumber: varchar("addressNumber", { length: 20 }),
+  neighborhood: varchar("neighborhood", { length: 255 }),
+  complement: varchar("complement", { length: 255 }),
+  city: varchar("city", { length: 255 }),
+  state: varchar("state", { length: 2 }),
+  zipCode: varchar("zipCode", { length: 10 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

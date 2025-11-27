@@ -40,7 +40,17 @@ export const cooperadosRouter = router({
       status: z.enum(["ativo", "inativo", "sem_producao"]).default("ativo"),
       contractId: z.number().optional(),
       email: z.string().email().optional(),
-      address: z.string().optional(),
+      // Telefones
+      whatsappNumber: z.string().optional(),
+      secondaryPhone: z.string().optional(),
+      // Endereço
+      street: z.string().optional(),
+      addressNumber: z.string().optional(),
+      neighborhood: z.string().optional(),
+      complement: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      zipCode: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
       const id = await db.createCooperado({
@@ -48,7 +58,9 @@ export const cooperadosRouter = router({
         name: normalizeText(input.name),
         document: normalizeText(input.document),
         position: input.position ? normalizeText(input.position) : undefined,
-        address: input.address ? normalizeText(input.address) : undefined,
+        street: input.street ? normalizeText(input.street) : undefined,
+        neighborhood: input.neighborhood ? normalizeText(input.neighborhood) : undefined,
+        city: input.city ? normalizeText(input.city) : undefined,
         birthDate: input.birthDate || null,
         admissionDate: input.admissionDate || null,
         terminationDate: null,
@@ -69,7 +81,17 @@ export const cooperadosRouter = router({
       status: z.enum(["ativo", "inativo", "sem_producao"]).optional(),
       contractId: z.number().optional(),
       email: z.string().email().optional(),
-      address: z.string().optional(),
+      // Telefones
+      whatsappNumber: z.string().optional(),
+      secondaryPhone: z.string().optional(),
+      // Endereço
+      street: z.string().optional(),
+      addressNumber: z.string().optional(),
+      neighborhood: z.string().optional(),
+      complement: z.string().optional(),
+      city: z.string().optional(),
+      state: z.string().optional(),
+      zipCode: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
@@ -78,7 +100,9 @@ export const cooperadosRouter = router({
         ...(data.name && { name: normalizeText(data.name) }),
         ...(data.document && { document: normalizeText(data.document) }),
         ...(data.position && { position: normalizeText(data.position) }),
-        ...(data.address && { address: normalizeText(data.address) }),
+        ...(data.street && { street: normalizeText(data.street) }),
+        ...(data.neighborhood && { neighborhood: normalizeText(data.neighborhood) }),
+        ...(data.city && { city: normalizeText(data.city) }),
       };
       await db.updateCooperado(id, normalizedData);
       return { success: true };

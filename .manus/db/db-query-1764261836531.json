@@ -1,0 +1,9 @@
+{
+  "query": "ALTER TABLE cooperados \nADD COLUMN whatsappNumber VARCHAR(20),\nADD COLUMN secondaryPhone VARCHAR(20),\nADD COLUMN street VARCHAR(255),\nADD COLUMN addressNumber VARCHAR(20),\nADD COLUMN neighborhood VARCHAR(255),\nADD COLUMN complement VARCHAR(255),\nADD COLUMN city VARCHAR(255),\nADD COLUMN state VARCHAR(2),\nADD COLUMN zipCode VARCHAR(10);",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2hPAEuH5YyprVTa.root --database kgpdAMRP8s25k8w5kNks6w --execute ALTER TABLE cooperados \nADD COLUMN whatsappNumber VARCHAR(20),\nADD COLUMN secondaryPhone VARCHAR(20),\nADD COLUMN street VARCHAR(255),\nADD COLUMN addressNumber VARCHAR(20),\nADD COLUMN neighborhood VARCHAR(255),\nADD COLUMN complement VARCHAR(255),\nADD COLUMN city VARCHAR(255),\nADD COLUMN state VARCHAR(2),\nADD COLUMN zipCode VARCHAR(10);",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 2625
+}

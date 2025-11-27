@@ -204,3 +204,14 @@
 - [x] Adicionar exportação XLS e CSV
 - [x] Aplicar normalização automática de texto
 - [x] Testar todas as funcionalidades
+
+## Expansão do Formulário de Cooperados
+- [x] Adicionar campo Nr WhatsApp no schema e formulário
+- [x] Adicionar campo Telefone Secundário no schema e formulário
+- [x] Expandir campos de endereço (Logradouro, Número, Bairro, Complemento, Cidade, UF, CEP)
+- [ ] Adicionar campos de dados bancários (Banco, Tipo de Conta, Agência, Conta, Dígito, PIX) - Nota: Dados bancários já existem em tabela separada
+- [x] Aplicar máscara de CPF na tabela (###.###.###-##)
+- [x] Remover acento de "Matrícula" em todos os lugares
+- [x] Atualizar schema do banco de dados
+- [x] Executar migrations
+- [x] Testar cadastro completo com todos os campos
