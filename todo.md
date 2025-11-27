@@ -138,3 +138,19 @@
 - [x] Baixar favicon da Coopedu
 - [x] Trocar logo para favicon quando menu estiver recolhido
 - [x] Atualizar favicon da página no HTML
+
+## Pacote para Execução Local
+- [x] Criar arquivo .env.local com configurações
+- [x] Criar script de instalação (install.bat/install.sh)
+- [x] Criar script de execução (start.bat/start.sh)
+- [x] Criar README com instruções
+- [x] Gerar arquivo ZIP com todos os arquivos
+
+## Melhorias no Cadastro de Contratos
+- [x] Adicionar campos cidade e UF ao schema de contratos
+- [x] Criar constante com lista de UFs do Brasil
+- [x] Atualizar API de contratos para incluir cidade e UF
+- [x] Atualizar interface com combobox de UF
+- [x] Implementar auto-preenchimento do nome do contrato com nome da cidade
+- [x] Tornar campos obrigatórios (nome, cidade, UF)
+- [x] Executar migrations do banco de dados

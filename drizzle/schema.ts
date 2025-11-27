@@ -103,6 +103,8 @@ export const contracts: any = mysqlTable("contracts", {
   id: int("id").autoincrement().primaryKey(),
   cooperadoId: int("cooperadoId").references(() => cooperados.id),
   name: varchar("name", { length: 255 }).notNull(),
+  city: varchar("city", { length: 100 }).notNull(),
+  state: varchar("state", { length: 2 }).notNull(),
   status: mysqlEnum("status", ["ativo", "inativo"]).default("ativo").notNull(),
   validityDate: date("validityDate"),
   isSpecial: boolean("isSpecial").default(false).notNull(),

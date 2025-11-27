@@ -31,6 +31,8 @@ export const contractsRouter = router({
     .input(z.object({
       cooperadoId: z.number().optional(),
       name: z.string().min(1),
+      city: z.string().min(1),
+      state: z.string().length(2),
       status: z.enum(["ativo", "inativo"]).default("ativo"),
       validityDate: z.string().optional(),
     }))
@@ -48,6 +50,8 @@ export const contractsRouter = router({
     .input(z.object({
       id: z.number(),
       name: z.string().min(1).optional(),
+      city: z.string().min(1).optional(),
+      state: z.string().length(2).optional(),
       status: z.enum(["ativo", "inativo"]).optional(),
       validityDate: z.string().optional(),
       cooperadoId: z.number().optional(),
