@@ -227,3 +227,14 @@
 - [x] Adicionar código internacional nos campos de telefone (default +55 Brasil)
 - [x] Incluir campos de dados bancários no formulário de cadastro
 - [x] Testar cadastro completo com todas as seções
+
+## Novos Campos e Melhorias em Cooperados
+- [x] Adicionar campo Data Associação ao schema
+- [x] Expandir Status para incluir "Desligado" além de Ativo/Inativo
+- [x] Criar lista de bancos do Brasil com código e nome
+- [x] Adicionar estados para associationDate e códigos internacionais
+- [ ] Implementar campos no formulário de cadastro
+- [ ] Implementar Chave PIX com CPF como default automático
+- [ ] Implementar autocomplete no campo Código do Banco
+- [ ] Atualizar router para aceitar novos campos
+- [ ] Testar cadastro completo com todos os novos campos

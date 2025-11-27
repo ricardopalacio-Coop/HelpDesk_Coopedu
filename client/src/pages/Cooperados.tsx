@@ -21,6 +21,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 import { ESTADOS_BRASIL } from "../../../shared/brasil";
+import { BANCOS_BRASIL } from "../../../shared/bancos";
 
 type Cooperado = {
   id: number;
@@ -29,6 +30,7 @@ type Cooperado = {
   document: string;
   birthDate: string | null;
   admissionDate: string | null;
+  associationDate: string | null;
   terminationDate: string | null;
   position: string | null;
   status: string;
@@ -64,12 +66,15 @@ export default function Cooperados() {
   const [document, setDocument] = useState("");
   const [birthDate, setBirthDate] = useState("");
   const [admissionDate, setAdmissionDate] = useState("");
+  const [associationDate, setAssociationDate] = useState("");
   const [position, setPosition] = useState("");
   const [contractId, setContractId] = useState("");
   const [email, setEmail] = useState("");
   
   // Telefones
+  const [whatsappCountryCode, setWhatsappCountryCode] = useState("+55");
   const [whatsappNumber, setWhatsappNumber] = useState("");
+  const [secondaryCountryCode, setSecondaryCountryCode] = useState("+55");
   const [secondaryPhone, setSecondaryPhone] = useState("");
   
   // Endereço

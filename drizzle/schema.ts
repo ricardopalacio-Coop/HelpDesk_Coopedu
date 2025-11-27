@@ -60,9 +60,10 @@ export const cooperados: any = mysqlTable("cooperados", {
   document: varchar("document", { length: 20 }).notNull(),
   birthDate: date("birthDate"),
   admissionDate: date("admissionDate"),
+  associationDate: date("associationDate"),
   terminationDate: date("terminationDate"),
   position: varchar("position", { length: 255 }),
-  status: mysqlEnum("status", ["ativo", "inativo", "sem_producao"]).default("ativo").notNull(),
+  status: mysqlEnum("status", ["ativo", "inativo", "sem_producao", "desligado"]).default("ativo").notNull(),
   contractId: int("contractId").references(() => contracts.id),
   email: varchar("email", { length: 255 }),
   // Telefones
