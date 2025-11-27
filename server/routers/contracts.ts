@@ -73,4 +73,12 @@ export const contractsRouter = router({
       await db.updateContract(id, normalizedData);
       return { success: true };
     }),
+
+  // Excluir contrato permanentemente
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await db.deleteContract(input.id);
+      return { success: true };
+    }),
 });

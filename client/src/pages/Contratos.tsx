@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Plus, Pencil, Trash2, Search } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, FileSpreadsheet, FileText, X } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -22,6 +22,7 @@ import { Switch } from "@/components/ui/switch";
 import { ESTADOS_BRASIL } from "@shared/brasil";
 import { useState, useMemo } from "react";
 import { toast } from "sonner";
+import * as XLSX from 'xlsx';
 
 type Contract = {
   id: number;
@@ -92,8 +93,8 @@ export default function Contratos() {
     },
   });
   
-  // Mutation para excluir contrato (usando update para inativar)
-  const deleteMutation = trpc.contracts.update.useMutation({
+  // Mutation para excluir contrato permanentemente
+  const deleteMutation = trpc.contracts.delete.useMutation({
     onSuccess: () => {
       toast.success("Contrato excluído com sucesso!");
       setOpenDelete(false);
@@ -160,7 +161,6 @@ export default function Contratos() {
     
     deleteMutation.mutate({
       id: deletingContract.id,
-      status: "inativo",
     });
   };
   
@@ -178,6 +178,69 @@ export default function Contratos() {
       return matchName && matchStatus;
     });
   }, [contracts, filterName, filterStatus]);
+  
+  // Exportar para XLS
+  const exportToXLS = () => {
+    if (!filteredContracts || filteredContracts.length === 0) {
+      toast.error("Nenhum contrato para exportar");
+      return;
+    }
+    
+    const data = filteredContracts.map((contract) => ({
+      ID: contract.id,
+      Nome: contract.name,
+      Cidade: contract.city || "-",
+      UF: contract.state || "-",
+      Status: contract.status,
+      Validade: contract.validityDate
+        ? new Date(contract.validityDate).toLocaleDateString("pt-BR")
+        : "-",
+      Especial: contract.isSpecial ? "Sim" : "Não",
+      "Criado em": new Date(contract.createdAt).toLocaleDateString("pt-BR"),
+    }));
+    
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Contratos");
+    XLSX.writeFile(wb, `contratos_${new Date().toISOString().split('T')[0]}.xlsx`);
+    
+    toast.success("Arquivo XLS exportado com sucesso!");
+  };
+  
+  // Exportar para CSV
+  const exportToCSV = () => {
+    if (!filteredContracts || filteredContracts.length === 0) {
+      toast.error("Nenhum contrato para exportar");
+      return;
+    }
+    
+    const headers = ["ID", "Nome", "Cidade", "UF", "Status", "Validade", "Especial", "Criado em"];
+    const rows = filteredContracts.map((contract) => [
+      contract.id,
+      contract.name,
+      contract.city || "-",
+      contract.state || "-",
+      contract.status,
+      contract.validityDate
+        ? new Date(contract.validityDate).toLocaleDateString("pt-BR")
+        : "-",
+      contract.isSpecial ? "Sim" : "Não",
+      new Date(contract.createdAt).toLocaleDateString("pt-BR"),
+    ]);
+    
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) => row.map((cell) => `"${cell}"`).join(",")),
+    ].join("\n");
+    
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `contratos_${new Date().toISOString().split('T')[0]}.csv`;
+    link.click();
+    
+    toast.success("Arquivo CSV exportado com sucesso!");
+  };
 
   const getStatusBadge = (status: string) => {
     return status === "ativo" ? (
@@ -196,118 +259,159 @@ export default function Contratos() {
             <h1 className="text-3xl font-bold tracking-tight">Contratos</h1>
             <p className="text-muted-foreground">Gerencie os contratos do sistema</p>
           </div>
-          <Dialog open={openCreate} onOpenChange={setOpenCreate}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Novo Contrato
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Novo Contrato</DialogTitle>
-                <DialogDescription>
-                  Preencha os dados do contrato
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleCreate} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Nome do Contrato *</Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Digite o nome do contrato"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="city">Cidade *</Label>
-                  <Input
-                    id="city"
-                    value={city}
-                    onChange={(e) => setCity(e.target.value)}
-                    placeholder="Digite o nome da cidade"
-                    required
-                  />
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="state">UF *</Label>
-                  <Select value={state} onValueChange={setState} required>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ESTADOS_BRASIL.map((estado) => (
-                        <SelectItem key={estado.sigla} value={estado.sigla}>
-                          {estado.sigla} - {estado.nome}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                
-                <div className="space-y-2">
-                  <Label htmlFor="validityDate">Data de Validade</Label>
-                  <Input
-                    id="validityDate"
-                    type="date"
-                    value={validityDate}
-                    onChange={(e) => setValidityDate(e.target.value)}
-                  />
-                </div>
-                
-                <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setOpenCreate(false)}>
-                    Cancelar
-                  </Button>
-                  <Button type="submit" disabled={createMutation.isPending}>
-                    {createMutation.isPending ? "Criando..." : "Criar Contrato"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={exportToCSV} title="Exportar para CSV">
+              <FileText className="mr-2 h-4 w-4" />
+              CSV
+            </Button>
+            <Button variant="outline" onClick={exportToXLS} title="Exportar para Excel">
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              XLS
+            </Button>
+            <Dialog open={openCreate} onOpenChange={setOpenCreate}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Novo Contrato
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Novo Contrato</DialogTitle>
+                  <DialogDescription>
+                    Preencha os dados do contrato
+                  </DialogDescription>
+                </DialogHeader>
+                <form onSubmit={handleCreate} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">Nome do Contrato *</Label>
+                    <Input
+                      id="name"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Digite o nome do contrato"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="city">Cidade *</Label>
+                    <Input
+                      id="city"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      placeholder="Digite o nome da cidade"
+                      required
+                    />
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="state">UF *</Label>
+                    <Select value={state} onValueChange={setState} required>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o estado" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {ESTADOS_BRASIL.map((estado) => (
+                          <SelectItem key={estado.sigla} value={estado.sigla}>
+                            {estado.sigla} - {estado.nome}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="validityDate">Data de Validade</Label>
+                    <Input
+                      id="validityDate"
+                      type="date"
+                      value={validityDate}
+                      onChange={(e) => setValidityDate(e.target.value)}
+                    />
+                  </div>
+                  
+                  <div className="flex justify-end gap-2">
+                    <Button type="button" variant="outline" onClick={() => setOpenCreate(false)}>
+                      Cancelar
+                    </Button>
+                    <Button type="submit" disabled={createMutation.isPending}>
+                      {createMutation.isPending ? "Criando..." : "Criar Contrato"}
+                    </Button>
+                  </div>
+                </form>
+              </DialogContent>
+            </Dialog>
+          </div>
         </div>
         
-        {/* Filtros */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Filtros</CardTitle>
-            <CardDescription>Busque contratos por nome ou status</CardDescription>
+        {/* Filtros Modernos */}
+        <Card className="border-2">
+          <CardHeader className="pb-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-lg">Filtros de Busca</CardTitle>
+                <CardDescription>Refine sua pesquisa de contratos</CardDescription>
+              </div>
+              {(filterName || filterStatus !== "todos") && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setFilterName("");
+                    setFilterStatus("todos");
+                  }}
+                >
+                  <X className="mr-2 h-4 w-4" />
+                  Limpar Filtros
+                </Button>
+              )}
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="filterName">Nome do Contrato</Label>
+                <Label htmlFor="filterName" className="text-sm font-medium">
+                  Nome do Contrato
+                </Label>
                 <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="filterName"
                     placeholder="Buscar por nome..."
                     value={filterName}
                     onChange={(e) => setFilterName(e.target.value)}
-                    className="pl-8"
+                    className="pl-10"
                   />
                 </div>
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="filterStatus">Status</Label>
+                <Label htmlFor="filterStatus" className="text-sm font-medium">
+                  Status
+                </Label>
                 <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as "todos" | "ativo" | "inativo")}>
-                  <SelectTrigger>
+                  <SelectTrigger id="filterStatus">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="todos">Todos</SelectItem>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="inativo">Inativo</SelectItem>
+                    <SelectItem value="todos">Todos os Status</SelectItem>
+                    <SelectItem value="ativo">✓ Ativos</SelectItem>
+                    <SelectItem value="inativo">✗ Inativos</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
+            
+            {(filterName || filterStatus !== "todos") && (
+              <div className="mt-4 pt-4 border-t">
+                <p className="text-sm text-muted-foreground">
+                  <strong>{filteredContracts?.length || 0}</strong> contrato(s) encontrado(s)
+                  {filterName && ` com "${filterName}"`}
+                  {filterStatus !== "todos" && ` • Status: ${filterStatus}`}
+                </p>
+              </div>
+            )}
           </CardContent>
         </Card>
 
@@ -483,10 +587,17 @@ export default function Contratos() {
       <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
-            <AlertDialogDescription>
-              Tem certeza que deseja excluir o contrato <strong>{deletingContract?.name}</strong>?
-              Esta ação irá inativar o contrato no sistema.
+            <AlertDialogTitle>⚠️ Confirmar Exclusão Permanente</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>
+                Tem certeza que deseja <strong>excluir permanentemente</strong> o contrato:
+              </p>
+              <p className="font-semibold text-foreground">
+                {deletingContract?.name}
+              </p>
+              <p className="text-destructive font-medium">
+                ⚠️ Esta ação não pode ser desfeita! O contrato será removido do banco de dados.
+              </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -495,7 +606,7 @@ export default function Contratos() {
               onClick={confirmDelete}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
+              {deleteMutation.isPending ? "Excluindo..." : "Sim, Excluir Permanentemente"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

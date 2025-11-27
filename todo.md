@@ -175,3 +175,11 @@
 - [x] Adicionar filtro por status (ativo/inativo)
 - [x] Padronizar coluna Especial (Não com mesmo estilo do Sim)
 - [x] Testar todas as funcionalidades
+
+## Melhorias Avançadas em Contratos
+- [x] Alterar exclusão para permanente (deletar do banco) com msgbox de confirmação
+- [x] Implementar IDs personalizados: primeiro dígito = código UF + 3 dígitos sequenciais
+- [x] Adicionar botão de exportação para XLS
+- [x] Adicionar botão de exportação para CSV
+- [x] Modernizar design dos filtros
+- [x] Testar todas as novas funcionalidades

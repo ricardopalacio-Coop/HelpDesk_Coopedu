@@ -350,8 +350,37 @@ export async function createContract(contract: InsertContract) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const result = await db.insert(contracts).values(contract);
-  return result[0].insertId;
+  // Importar função de geração de ID
+  const { generateContractId } = await import('../shared/ufCodes');
+  
+  // Buscar o último contrato da mesma UF para gerar o próximo sequencial
+  const { extractSequentialFromContractId } = await import('../shared/ufCodes');
+  const existingContracts = await db.select()
+    .from(contracts)
+    .where(eq(contracts.state, contract.state))
+    .orderBy(desc(contracts.id));
+  
+  let nextSequential = 1;
+  if (existingContracts.length > 0) {
+    try {
+      const lastSequential = extractSequentialFromContractId(existingContracts[0].id);
+      nextSequential = lastSequential + 1;
+    } catch {
+      // Se não conseguir extrair, começa do 1
+      nextSequential = 1;
+    }
+  }
+  
+  // Gerar ID personalizado
+  const customId = generateContractId(contract.state, nextSequential);
+  
+  // Inserir com ID personalizado
+  await db.insert(contracts).values({
+    ...contract,
+    id: customId,
+  });
+  
+  return customId;
 }
 
 export async function updateContract(id: number, data: Partial<InsertContract>) {
@@ -359,6 +388,19 @@ export async function updateContract(id: number, data: Partial<InsertContract>) 
   if (!db) throw new Error("Database not available");
   
   await db.update(contracts).set(data).where(eq(contracts.id, id));
+}
+
+export async function deleteContract(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  // Verificar se é contrato especial
+  const contract = await db.select().from(contracts).where(eq(contracts.id, id)).limit(1);
+  if (contract.length > 0 && contract[0].isSpecial) {
+    throw new Error("Não é possível excluir contrato especial");
+  }
+  
+  await db.delete(contracts).where(eq(contracts.id, id));
 }
 
 // ============================================================================
