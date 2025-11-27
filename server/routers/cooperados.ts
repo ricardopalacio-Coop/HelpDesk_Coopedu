@@ -84,6 +84,14 @@ export const cooperadosRouter = router({
       return { success: true };
     }),
 
+  // Excluir cooperado
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input }) => {
+      await db.deleteCooperado(input.id);
+      return { success: true };
+    }),
+
   // Gerenciar telefones do cooperado
   phones: router({
     list: protectedProcedure

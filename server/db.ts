@@ -244,6 +244,13 @@ export async function updateCooperado(id: number, data: Partial<InsertCooperado>
   await db.update(cooperados).set(data).where(eq(cooperados.id, id));
 }
 
+export async function deleteCooperado(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(cooperados).where(eq(cooperados.id, id));
+}
+
 // ============================================================================
 // TELEFONES DE COOPERADOS
 // ============================================================================

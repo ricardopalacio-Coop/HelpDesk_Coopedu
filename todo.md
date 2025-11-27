@@ -189,3 +189,18 @@
 - [x] Remover acentos da palavra "Não" em todos os lugares
 - [x] Adicionar ordenação crescente/decrescente nas colunas da tabela
 - [x] Testar todas as correções
+
+## Página de Cooperados
+- [x] Criar página de listagem de cooperados com tabela
+- [x] Implementar filtros modernos (nome, status, contrato)
+- [x] Adicionar modal de cadastro com todos os campos
+- [x] Implementar campos de matrícula, CPF, nome, cargo
+- [x] Adicionar seleção de contrato vinculado
+- [ ] Implementar cadastro de múltiplos telefones (pendente)
+- [ ] Adicionar campos de dados bancários (pendente)
+- [x] Implementar ações de editar e excluir
+- [x] Adicionar confirmação de exclusão
+- [x] Implementar ordenação clicável nas colunas
+- [x] Adicionar exportação XLS e CSV
+- [x] Aplicar normalização automática de texto
+- [x] Testar todas as funcionalidades
