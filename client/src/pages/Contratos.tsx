@@ -588,16 +588,18 @@ export default function Contratos() {
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>⚠️ Confirmar Exclusão Permanente</AlertDialogTitle>
-            <AlertDialogDescription className="space-y-2">
-              <p>
-                Tem certeza que deseja <strong>excluir permanentemente</strong> o contrato:
-              </p>
-              <p className="font-semibold text-foreground">
-                {deletingContract?.name}
-              </p>
-              <p className="text-destructive font-medium">
-                ⚠️ Esta ação não pode ser desfeita! O contrato será removido do banco de dados.
-              </p>
+            <AlertDialogDescription asChild>
+              <div className="space-y-2">
+                <p>
+                  Tem certeza que deseja <strong>excluir permanentemente</strong> o contrato:
+                </p>
+                <p className="font-semibold text-foreground">
+                  {deletingContract?.name}
+                </p>
+                <p className="text-destructive font-medium">
+                  ⚠️ Esta ação não pode ser desfeita! O contrato será removido do banco de dados.
+                </p>
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
