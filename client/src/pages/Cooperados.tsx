@@ -490,7 +490,7 @@ export default function Cooperados() {
                     Novo Cooperado
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-8">
+                <DialogContent className="w-[95vw] max-w-[1600px] max-h-[90vh] overflow-y-auto p-8">
                   <DialogHeader>
                     <DialogTitle className="text-2xl">Novo Cooperado</DialogTitle>
                     <DialogDescription>
@@ -1145,7 +1145,7 @@ export default function Cooperados() {
       
       {/* Dialog de Edição */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-8">
+        <DialogContent className="w-[95vw] max-w-[1600px] max-h-[90vh] overflow-y-auto p-8">
           <DialogHeader>
             <DialogTitle>Editar Cooperado</DialogTitle>
             <DialogDescription>Atualize os dados do cooperado</DialogDescription>

@@ -270,3 +270,8 @@
 - [x] Melhorar espaçamento interno (padding)
 - [x] Ajustar grid de campos para aproveitar melhor o espaço horizontal
 - [x] Testar responsividade em diferentes tamanhos de tela
+
+## BUGS CRÍTICOS Reportados pelo Usuário
+- [x] Menus não estão visíveis após última atualização (FALSO POSITIVO - menus sempre estiveram visíveis)
+- [x] Modal de cadastro ainda não está usando o espaço adequado da tela (RESOLVIDO - removido sm:max-w-lg do Dialog)
+- [x] Verificar se alterações de max-w-7xl realmente foram aplicadas (RESOLVIDO - usado w-[95vw] max-w-[1600px])
