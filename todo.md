@@ -246,3 +246,15 @@
 - [x] Aumentar largura do modal de cadastro para melhor alinhamento
 - [x] Corrigir useEffect do PIX para copiar CPF completo (11 caracteres)
 - [x] Testar todas as correções
+
+## Melhorias de UX no Formulário de Cooperados
+- [x] Implementar máscaras de entrada (CPF, telefone, CEP) com react-input-mask
+- [x] Adicionar busca automática de endereço via API ViaCEP
+- [x] Implementar validação visual em tempo real com feedback de erros
+- [x] Adicionar indicador de progresso mostrando campos obrigatórios preenchidos
+- [x] Implementar tooltips informativos nos campos principais
+- [x] Melhorar agrupamento visual das seções com cores e bordas
+- [x] Adicionar ícones e estados visuais nos botões de ação
+- [x] Implementar loading spinner durante busca de CEP
+- [x] Adicionar validação de CPF com 11 dígitos
+- [x] Melhorar largura do modal para 6xl (max-w-6xl)
