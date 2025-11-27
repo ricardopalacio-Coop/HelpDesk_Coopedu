@@ -289,3 +289,18 @@
 - [x] Criar modal que exibe apenas informações bancárias do cooperado
 - [x] Modal deve mostrar: Banco, Agência, Conta, Dígito, Tipo de Conta, Chave PIX
 - [x] Testar abertura do modal e exibição dos dados
+
+## Refatoração SonarQube - Conceito A (CANCELADA)
+- [-] Reduzir complexidade cognitiva (quebrar funções grandes, extrair lógica)
+- [-] Melhorar segurança de tipos (eliminar any, adicionar tipos explícitos)
+- [-] Remover code smells (duplicação, magic numbers, funções longas)
+- [-] Aplicar imutabilidade e pureza (const, evitar mutações, funções puras)
+- [-] Gerar arquivo ZIP com código refatorado
+
+OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
+
+## Novos Ícones na Lista de Cooperados
+- [x] Adicionar ícone "Demonstrativo de Pagamento" após ícone de Dados Bancários
+- [x] Adicionar ícone "Declaração de Produtividade" após Demonstrativo de Pagamento
+- [x] Ambos devem exibir toast "Em Desenvolvimento" ao clicar
+- [x] Testar funcionalidade dos ícones

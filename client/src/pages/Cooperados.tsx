@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Plus, Pencil, Trash2, Search, FileSpreadsheet, FileText, X, ArrowUpDown, ArrowUp, ArrowDown, CheckCircle2, AlertCircle, Loader2, CreditCard } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, FileSpreadsheet, FileText, X, ArrowUpDown, ArrowUp, ArrowDown, CheckCircle2, AlertCircle, Loader2, CreditCard, Receipt, Award } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -1118,6 +1118,22 @@ export default function Cooperados() {
                               title="Ver Dados Bancários"
                             >
                               <CreditCard className="h-4 w-4 text-blue-600" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toast.info("Em Desenvolvimento")}
+                              title="Demonstrativo de Pagamento"
+                            >
+                              <Receipt className="h-4 w-4 text-green-600" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => toast.info("Em Desenvolvimento")}
+                              title="Declaração de Produtividade"
+                            >
+                              <Award className="h-4 w-4 text-purple-600" />
                             </Button>
                             <Button
                               variant="ghost"
