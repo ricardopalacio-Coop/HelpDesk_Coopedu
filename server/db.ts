@@ -350,20 +350,19 @@ export async function createContract(contract: InsertContract) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  // Importar função de geração de ID
-  const { generateContractId } = await import('../shared/ufCodes');
+  // Importar funções de geração de ID
+  const { generateContractId, extractSequentialFromContractId } = await import('../shared/ufCodes');
   
   // Buscar o último contrato da mesma UF para gerar o próximo sequencial
-  const { extractSequentialFromContractId } = await import('../shared/ufCodes');
-  const existingContracts = await db.select()
+  const existingContractsFromState = await db.select()
     .from(contracts)
     .where(eq(contracts.state, contract.state))
     .orderBy(desc(contracts.id));
   
   let nextSequential = 1;
-  if (existingContracts.length > 0) {
+  if (existingContractsFromState.length > 0) {
     try {
-      const lastSequential = extractSequentialFromContractId(existingContracts[0].id);
+      const lastSequential = extractSequentialFromContractId(existingContractsFromState[0].id);
       nextSequential = lastSequential + 1;
     } catch {
       // Se não conseguir extrair, começa do 1
@@ -371,16 +370,41 @@ export async function createContract(contract: InsertContract) {
     }
   }
   
-  // Gerar ID personalizado
-  const customId = generateContractId(contract.state, nextSequential);
+  // Gerar ID personalizado e verificar se já existe (loop até encontrar ID disponível)
+  let customId: number;
+  let attempts = 0;
+  const maxAttempts = 999; // Máximo de contratos por UF
+  
+  while (attempts < maxAttempts) {
+    customId = generateContractId(contract.state, nextSequential);
+    
+    // Verificar se o ID já existe
+    const existing = await db.select()
+      .from(contracts)
+      .where(eq(contracts.id, customId))
+      .limit(1);
+    
+    if (existing.length === 0) {
+      // ID disponível, pode inserir
+      break;
+    }
+    
+    // ID já existe, incrementar e tentar novamente
+    nextSequential++;
+    attempts++;
+  }
+  
+  if (attempts >= maxAttempts) {
+    throw new Error(`Não foi possível gerar um ID único para o estado ${contract.state}. Limite de contratos atingido.`);
+  }
   
   // Inserir com ID personalizado
   await db.insert(contracts).values({
     ...contract,
-    id: customId,
+    id: customId!,
   });
   
-  return customId;
+  return customId!;
 }
 
 export async function updateContract(id: number, data: Partial<InsertContract>) {
