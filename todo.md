@@ -275,3 +275,7 @@
 - [x] Menus não estão visíveis após última atualização (FALSO POSITIVO - menus sempre estiveram visíveis)
 - [x] Modal de cadastro ainda não está usando o espaço adequado da tela (RESOLVIDO - removido sm:max-w-lg do Dialog)
 - [x] Verificar se alterações de max-w-7xl realmente foram aplicadas (RESOLVIDO - usado w-[95vw] max-w-[1600px])
+
+## Novos Bugs Reportados
+- [x] Menu lateral desaparece ao entrar na página Cooperados (RESOLVIDO - adicionado DashboardLayout)
+- [x] Remover campo "Data de Admissão" do formulário de cooperados (CONCLUÍDO - removido de cadastro e edição)

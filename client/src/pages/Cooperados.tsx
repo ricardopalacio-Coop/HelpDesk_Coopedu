@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useMemo, useEffect } from "react";
+import DashboardLayout from "@/components/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -67,7 +68,6 @@ export default function Cooperados() {
   const [name, setName] = useState("");
   const [document, setDocument] = useState("");
   const [birthDate, setBirthDate] = useState("");
-  const [admissionDate, setAdmissionDate] = useState("");
   const [associationDate, setAssociationDate] = useState("");
   const [position, setPosition] = useState("");
   const [status, setStatus] = useState("ativo");
@@ -155,7 +155,6 @@ export default function Cooperados() {
   const [editName, setEditName] = useState("");
   const [editDocument, setEditDocument] = useState("");
   const [editBirthDate, setEditBirthDate] = useState("");
-  const [editAdmissionDate, setEditAdmissionDate] = useState("");
   const [editTerminationDate, setEditTerminationDate] = useState("");
   const [editPosition, setEditPosition] = useState("");
   const [editStatus, setEditStatus] = useState<"ativo" | "inativo" | "desligado">("ativo");
@@ -229,7 +228,6 @@ export default function Cooperados() {
     setName("");
     setDocument("");
     setBirthDate("");
-    setAdmissionDate("");
     setAssociationDate("");
     setPosition("");
     setStatus("ativo");
@@ -264,7 +262,6 @@ export default function Cooperados() {
       name,
       document: document.replace(/\D/g, ''),
       birthDate: birthDate || undefined,
-      admissionDate: admissionDate || undefined,
       associationDate: associationDate || undefined,
       position: position || undefined,
       status: status as "ativo" | "inativo" | "desligado",
@@ -310,7 +307,6 @@ export default function Cooperados() {
     };
     
     setEditBirthDate(formatDateForInput(cooperado.birthDate));
-    setEditAdmissionDate(formatDateForInput(cooperado.admissionDate));
     setEditTerminationDate(formatDateForInput(cooperado.terminationDate));
     setEditPosition(cooperado.position || "");
     setEditStatus(cooperado.status as "ativo" | "inativo" | "desligado");
@@ -337,7 +333,6 @@ export default function Cooperados() {
       name: editName,
       document: editDocument,
       birthDate: editBirthDate || undefined,
-      admissionDate: editAdmissionDate || undefined,
       terminationDate: editTerminationDate || undefined,
       position: editPosition || undefined,
       status: editStatus,
@@ -466,7 +461,8 @@ export default function Cooperados() {
   };
   
   return (
-    <div className="container py-8">
+    <DashboardLayout>
+      <div className="container py-8">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -623,15 +619,6 @@ export default function Cooperados() {
                             type="date"
                             value={birthDate}
                             onChange={(e) => setBirthDate(e.target.value)}
-                          />
-                        </div>
-                        <div>
-                          <Label htmlFor="admissionDate" className="mb-2 block font-medium">Data de Admissão</Label>
-                          <Input
-                            id="admissionDate"
-                            type="date"
-                            value={admissionDate}
-                            onChange={(e) => setAdmissionDate(e.target.value)}
                           />
                         </div>
                         <div>
@@ -1192,15 +1179,6 @@ export default function Cooperados() {
                 />
               </div>
               <div>
-                <Label htmlFor="editAdmissionDate">Data de Admissão</Label>
-                <Input
-                  id="editAdmissionDate"
-                  type="date"
-                  value={editAdmissionDate}
-                  onChange={(e) => setEditAdmissionDate(e.target.value)}
-                />
-              </div>
-              <div>
                 <Label htmlFor="editTerminationDate">Data de Desligamento</Label>
                 <Input
                   id="editTerminationDate"
@@ -1389,6 +1367,7 @@ export default function Cooperados() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 }
