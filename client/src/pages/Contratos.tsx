@@ -122,7 +122,15 @@ export default function Contratos() {
     setEditName(contract.name);
     setEditCity(contract.city || "");
     setEditState(contract.state || "");
-    setEditValidityDate(contract.validityDate ? contract.validityDate.split('T')[0] : "");
+    
+    // Tratar validityDate que pode ser string ou null
+    let formattedDate = "";
+    if (contract.validityDate) {
+      const dateStr = String(contract.validityDate);
+      formattedDate = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+    }
+    setEditValidityDate(formattedDate);
+    
     setEditStatus(contract.status as "ativo" | "inativo");
     setOpenEdit(true);
   };
