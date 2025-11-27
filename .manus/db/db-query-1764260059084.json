@@ -1,0 +1,46 @@
+{
+  "query": "SELECT id, name, city, state FROM contracts ORDER BY id;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2hPAEuH5YyprVTa.root --database kgpdAMRP8s25k8w5kNks6w --execute SELECT id, name, city, state FROM contracts ORDER BY id;",
+  "rows": [
+    {
+      "id": "1",
+      "name": "NÃO COOPERADO",
+      "city": "",
+      "state": ""
+    },
+    {
+      "id": "20002",
+      "name": "BODO",
+      "city": "BODO",
+      "state": "RN"
+    },
+    {
+      "id": "20003",
+      "name": "FLORANIA",
+      "city": "FLORANIA",
+      "state": "RN"
+    },
+    {
+      "id": "26001",
+      "name": "ITABAHIANINHA",
+      "city": "ITABAHIANINHA",
+      "state": "SE"
+    },
+    {
+      "id": "30001",
+      "name": "MONTE ALEGRE",
+      "city": "MONTE ALEGRE",
+      "state": "RN"
+    },
+    {
+      "id": "60001",
+      "name": "JUCURUTU",
+      "city": "JUCURUTU",
+      "state": "RN"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcity\tstate\n1\tNÃO COOPERADO\t\t\n20002\tBODO\tBODO\tRN\n20003\tFLORANIA\tFLORANIA\tRN\n26001\tITABAHIANINHA\tITABAHIANINHA\tSE\n30001\tMONTE ALEGRE\tMONTE ALEGRE\tRN\n60001\tJUCURUTU\tJUCURUTU\tRN\n",
+  "stderr": "",
+  "execution_time_ms": 1134
+}

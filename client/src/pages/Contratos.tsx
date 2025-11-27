@@ -11,7 +11,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Plus, Pencil, Trash2, Search, FileSpreadsheet, FileText, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, FileSpreadsheet, FileText, X, ArrowUpDown, ArrowUp, ArrowDown } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -61,6 +61,10 @@ export default function Contratos() {
   // Estados para filtros
   const [filterName, setFilterName] = useState("");
   const [filterStatus, setFilterStatus] = useState<"todos" | "ativo" | "inativo">("todos");
+  
+  // Estados para ordenação
+  const [sortColumn, setSortColumn] = useState<keyof Contract | null>(null);
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   
   const utils = trpc.useUtils();
   
@@ -164,11 +168,12 @@ export default function Contratos() {
     });
   };
   
-  // Filtrar contratos
+  // Filtrar e ordenar contratos
   const filteredContracts = useMemo(() => {
     if (!contracts) return [];
     
-    return contracts.filter((contract) => {
+    // Filtrar
+    let filtered = contracts.filter((contract) => {
       const matchName = filterName === "" || 
         contract.name.toLowerCase().includes(filterName.toLowerCase());
       
@@ -177,7 +182,46 @@ export default function Contratos() {
       
       return matchName && matchStatus;
     });
-  }, [contracts, filterName, filterStatus]);
+    
+    // Ordenar
+    if (sortColumn) {
+      filtered = [...filtered].sort((a, b) => {
+        const aValue = a[sortColumn];
+        const bValue = b[sortColumn];
+        
+        // Tratar valores nulos
+        if (aValue === null && bValue === null) return 0;
+        if (aValue === null) return sortDirection === "asc" ? 1 : -1;
+        if (bValue === null) return sortDirection === "asc" ? -1 : 1;
+        
+        // Comparar valores
+        let comparison = 0;
+        if (typeof aValue === "string" && typeof bValue === "string") {
+          comparison = aValue.localeCompare(bValue);
+        } else if (typeof aValue === "number" && typeof bValue === "number") {
+          comparison = aValue - bValue;
+        } else if (aValue instanceof Date && bValue instanceof Date) {
+          comparison = aValue.getTime() - bValue.getTime();
+        }
+        
+        return sortDirection === "asc" ? comparison : -comparison;
+      });
+    }
+    
+    return filtered;
+  }, [contracts, filterName, filterStatus, sortColumn, sortDirection]);
+  
+  // Função para alternar ordenação
+  const handleSort = (column: keyof Contract) => {
+    if (sortColumn === column) {
+      // Alternar direção
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
+    } else {
+      // Nova coluna, começar com ascendente
+      setSortColumn(column);
+      setSortDirection("asc");
+    }
+  };
   
   // Exportar para XLS
   const exportToXLS = () => {
@@ -195,7 +239,7 @@ export default function Contratos() {
       Validade: contract.validityDate
         ? new Date(contract.validityDate).toLocaleDateString("pt-BR")
         : "-",
-      Especial: contract.isSpecial ? "Sim" : "Não",
+      Especial: contract.isSpecial ? "Sim" : "NAO",
       "Criado em": new Date(contract.createdAt).toLocaleDateString("pt-BR"),
     }));
     
@@ -224,7 +268,7 @@ export default function Contratos() {
       contract.validityDate
         ? new Date(contract.validityDate).toLocaleDateString("pt-BR")
         : "-",
-      contract.isSpecial ? "Sim" : "Não",
+      contract.isSpecial ? "Sim" : "NAO",
       new Date(contract.createdAt).toLocaleDateString("pt-BR"),
     ]);
     
@@ -432,14 +476,86 @@ export default function Contratos() {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>ID</TableHead>
-                    <TableHead>Nome</TableHead>
-                    <TableHead>Cidade</TableHead>
-                    <TableHead>UF</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Validade</TableHead>
-                    <TableHead>Especial</TableHead>
-                    <TableHead>Criado em</TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => handleSort("id")} className="-ml-3 h-8">
+                        ID
+                        {sortColumn === "id" ? (
+                          sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => handleSort("name")} className="-ml-3 h-8">
+                        Nome
+                        {sortColumn === "name" ? (
+                          sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => handleSort("city")} className="-ml-3 h-8">
+                        Cidade
+                        {sortColumn === "city" ? (
+                          sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => handleSort("state")} className="-ml-3 h-8">
+                        UF
+                        {sortColumn === "state" ? (
+                          sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => handleSort("status")} className="-ml-3 h-8">
+                        Status
+                        {sortColumn === "status" ? (
+                          sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => handleSort("validityDate")} className="-ml-3 h-8">
+                        Validade
+                        {sortColumn === "validityDate" ? (
+                          sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => handleSort("isSpecial")} className="-ml-3 h-8">
+                        Especial
+                        {sortColumn === "isSpecial" ? (
+                          sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                    </TableHead>
+                    <TableHead>
+                      <Button variant="ghost" size="sm" onClick={() => handleSort("createdAt")} className="-ml-3 h-8">
+                        Criado em
+                        {sortColumn === "createdAt" ? (
+                          sortDirection === "asc" ? <ArrowUp className="ml-2 h-4 w-4" /> : <ArrowDown className="ml-2 h-4 w-4" />
+                        ) : (
+                          <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+                        )}
+                      </Button>
+                    </TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -460,7 +576,7 @@ export default function Contratos() {
                         {contract.isSpecial ? (
                           <Badge variant="secondary" className="bg-[#00b7ff] text-white">Sim</Badge>
                         ) : (
-                          <Badge variant="outline">Não</Badge>
+                          <Badge variant="outline">NAO</Badge>
                         )}
                       </TableCell>
                       <TableCell>

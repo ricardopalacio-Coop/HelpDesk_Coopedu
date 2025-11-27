@@ -183,3 +183,9 @@
 - [x] Adicionar botão de exportação para CSV
 - [x] Modernizar design dos filtros
 - [x] Testar todas as novas funcionalidades
+
+## Correções em Contratos
+- [x] Padronizar IDs dos contratos existentes (Monte Alegre e Jucurutu) para formato UF+sequencial
+- [x] Remover acentos da palavra "Não" em todos os lugares
+- [x] Adicionar ordenação crescente/decrescente nas colunas da tabela
+- [x] Testar todas as correções
