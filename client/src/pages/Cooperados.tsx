@@ -145,7 +145,7 @@ export default function Cooperados() {
       birthDate: birthDate || undefined,
       admissionDate: admissionDate || undefined,
       position: position || undefined,
-      contractId: contractId ? parseInt(contractId) : undefined,
+      contractId: (contractId && contractId !== "sem_contrato") ? parseInt(contractId) : undefined,
       email: email || undefined,
       address: address || undefined,
       status: "ativo",
@@ -162,7 +162,7 @@ export default function Cooperados() {
     setEditTerminationDate(cooperado.terminationDate ? cooperado.terminationDate.split('T')[0] : "");
     setEditPosition(cooperado.position || "");
     setEditStatus(cooperado.status as "ativo" | "inativo" | "sem_producao");
-    setEditContractId(cooperado.contractId ? cooperado.contractId.toString() : "");
+    setEditContractId(cooperado.contractId ? cooperado.contractId.toString() : "sem_contrato");
     setEditEmail(cooperado.email || "");
     setEditAddress(cooperado.address || "");
     setOpenEdit(true);
@@ -182,7 +182,7 @@ export default function Cooperados() {
       terminationDate: editTerminationDate || undefined,
       position: editPosition || undefined,
       status: editStatus,
-      contractId: editContractId ? parseInt(editContractId) : undefined,
+      contractId: (editContractId && editContractId !== "sem_contrato") ? parseInt(editContractId) : undefined,
       email: editEmail || undefined,
       address: editAddress || undefined,
     });
@@ -421,7 +421,7 @@ export default function Cooperados() {
                           <SelectValue placeholder="Selecione o contrato" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="">Sem contrato</SelectItem>
+                          <SelectItem value="sem_contrato">Sem contrato</SelectItem>
                           {contracts?.filter(c => c.status === "ativo").map((contract) => (
                             <SelectItem key={contract.id} value={contract.id.toString()}>
                               {contract.name}
@@ -789,7 +789,7 @@ export default function Cooperados() {
                   <SelectValue placeholder="Selecione o contrato" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Sem contrato</SelectItem>
+                  <SelectItem value="sem_contrato">Sem contrato</SelectItem>
                   {contracts?.filter(c => c.status === "ativo").map((contract) => (
                     <SelectItem key={contract.id} value={contract.id.toString()}>
                       {contract.name}
