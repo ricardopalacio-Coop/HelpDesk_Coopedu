@@ -7,7 +7,7 @@ export const cooperadosRouter = router({
   // Listar todos os cooperados com filtros
   list: protectedProcedure
     .input(z.object({
-      status: z.enum(["ativo", "inativo", "sem_producao", "desligado"]).optional(),
+      status: z.enum(["ativo", "inativo", "", "desligado"]).optional(),
       search: z.string().optional(),
     }).optional())
     .query(async ({ input }) => {
@@ -38,7 +38,7 @@ export const cooperadosRouter = router({
       admissionDate: z.string().optional(),
       associationDate: z.string().optional(),
       position: z.string().optional(),
-      status: z.enum(["ativo", "inativo", "sem_producao", "desligado"]).default("ativo"),
+      status: z.enum(["ativo", "inativo", "", "desligado"]).default("ativo"),
       contractId: z.number().optional(),
       email: z.string().email().optional(),
       // Telefones
@@ -108,7 +108,7 @@ export const cooperadosRouter = router({
       associationDate: z.string().optional(),
       terminationDate: z.string().optional(),
       position: z.string().optional(),
-      status: z.enum(["ativo", "inativo", "sem_producao", "desligado"]).optional(),
+      status: z.enum(["ativo", "inativo", "", "desligado"]).optional(),
       contractId: z.number().optional(),
       email: z.string().email().optional(),
       // Telefones

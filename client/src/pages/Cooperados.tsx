@@ -98,7 +98,7 @@ export default function Cooperados() {
   
   // Atualizar PIX automaticamente quando CPF mudar
   useEffect(() => {
-    if (document && !pixKey) {
+    if (document && document.length >= 11) {
       setPixKey(document);
     }
   }, [document]);
@@ -113,7 +113,7 @@ export default function Cooperados() {
   const [editAdmissionDate, setEditAdmissionDate] = useState("");
   const [editTerminationDate, setEditTerminationDate] = useState("");
   const [editPosition, setEditPosition] = useState("");
-  const [editStatus, setEditStatus] = useState<"ativo" | "inativo" | "sem_producao">("ativo");
+  const [editStatus, setEditStatus] = useState<"ativo" | "inativo" | "desligado">("ativo");
   const [editContractId, setEditContractId] = useState("");
   const [editEmail, setEditEmail] = useState("");
   
@@ -237,7 +237,7 @@ export default function Cooperados() {
       accountNumber: accountNumber || undefined,
       accountDigit: accountDigit || undefined,
       pixKey: pixKey || undefined,
-      status: status as "ativo" | "inativo" | "sem_producao" | "desligado",
+      status: status as "ativo" | "inativo" | "desligado",
     });
   };
   
@@ -251,7 +251,7 @@ export default function Cooperados() {
     setEditAdmissionDate(cooperado.admissionDate ? (typeof cooperado.admissionDate === 'string' ? cooperado.admissionDate.split('T')[0] : new Date(cooperado.admissionDate).toISOString().split('T')[0]) : "");
     setEditTerminationDate(cooperado.terminationDate ? (typeof cooperado.terminationDate === 'string' ? cooperado.terminationDate.split('T')[0] : new Date(cooperado.terminationDate).toISOString().split('T')[0]) : "");
     setEditPosition(cooperado.position || "");
-    setEditStatus(cooperado.status as "ativo" | "inativo" | "sem_producao");
+    setEditStatus(cooperado.status as "ativo" | "inativo" | "desligado");
     setEditContractId(cooperado.contractId ? cooperado.contractId.toString() : "sem_contrato");
     setEditEmail(cooperado.email || "");
     setEditWhatsappNumber(cooperado.whatsappNumber || "");
@@ -445,7 +445,7 @@ export default function Cooperados() {
                     Novo Cooperado
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
                   <DialogHeader>
                     <DialogTitle>Novo Cooperado</DialogTitle>
                     <DialogDescription>Preencha os dados do novo cooperado</DialogDescription>
@@ -493,7 +493,6 @@ export default function Cooperados() {
                             <SelectContent>
                               <SelectItem value="ativo">Ativo</SelectItem>
                               <SelectItem value="inativo">Inativo</SelectItem>
-                              <SelectItem value="sem_producao">Sem Producao</SelectItem>
                               <SelectItem value="desligado">Desligado</SelectItem>
                             </SelectContent>
                           </Select>
@@ -820,7 +819,7 @@ export default function Cooperados() {
                   <SelectItem value="todos">Todos os status</SelectItem>
                   <SelectItem value="ativo">Ativo</SelectItem>
                   <SelectItem value="inativo">Inativo</SelectItem>
-                  <SelectItem value="sem_producao">Sem Producao</SelectItem>
+                  <SelectItem value="desligado">Desligado</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={contractFilter} onValueChange={setContractFilter}>
@@ -944,7 +943,7 @@ export default function Cooperados() {
       
       {/* Modal de Edição */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Editar Cooperado</DialogTitle>
             <DialogDescription>Atualize os dados do cooperado</DialogDescription>
@@ -1022,14 +1021,14 @@ export default function Cooperados() {
                 </div>
                 <div>
                   <Label htmlFor="editStatus">Status *</Label>
-                  <Select value={editStatus} onValueChange={(value: "ativo" | "inativo" | "sem_producao") => setEditStatus(value)}>
+                  <Select value={editStatus} onValueChange={(value: "ativo" | "inativo" | "desligado") => setEditStatus(value)}>
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="ativo">Ativo</SelectItem>
                       <SelectItem value="inativo">Inativo</SelectItem>
-                      <SelectItem value="sem_producao">Sem Producao</SelectItem>
+                      <SelectItem value="desligado">Desligado</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

@@ -240,3 +240,9 @@
 - [x] Implementar autocomplete de bancos com busca por código/nome
 - [x] Implementar PIX preenchido automaticamente com CPF
 - [x] Testar cadastro completo com todos os novos campos
+
+## Correções no Formulário de Cooperados
+- [x] Remover status "Sem produção" do dropdown e schema
+- [x] Aumentar largura do modal de cadastro para melhor alinhamento
+- [x] Corrigir useEffect do PIX para copiar CPF completo (11 caracteres)
+- [x] Testar todas as correções
