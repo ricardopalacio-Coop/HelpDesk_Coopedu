@@ -264,3 +264,9 @@
 - [x] Implementar máscaras nativas usando IMask ou input-mask-core
 - [x] Testar todas as máscaras (CPF, telefone, CEP)
 - [x] Validar funcionamento completo do formulário
+
+## Melhorias de Layout do Modal de Cadastro
+- [x] Aumentar largura máxima do modal de 6xl para 7xl ou full
+- [x] Melhorar espaçamento interno (padding)
+- [x] Ajustar grid de campos para aproveitar melhor o espaço horizontal
+- [x] Testar responsividade em diferentes tamanhos de tela

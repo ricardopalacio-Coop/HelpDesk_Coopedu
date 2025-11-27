@@ -490,7 +490,7 @@ export default function Cooperados() {
                     Novo Cooperado
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+                <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-8">
                   <DialogHeader>
                     <DialogTitle className="text-2xl">Novo Cooperado</DialogTitle>
                     <DialogDescription>
@@ -645,7 +645,7 @@ export default function Cooperados() {
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-3 gap-4">
                         <div>
                           <Label htmlFor="contractId" className="mb-2 block font-medium">Contrato</Label>
                           <Select value={contractId} onValueChange={setContractId}>
@@ -826,7 +826,7 @@ export default function Cooperados() {
                         <div className="h-8 w-1 bg-amber-600 rounded-full"></div>
                         Dados Bancários
                       </h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-3 gap-4">
                         <div>
                           <Label htmlFor="bankCode" className="mb-2 block font-medium">Código do Banco</Label>
                           <Input
@@ -897,7 +897,7 @@ export default function Cooperados() {
                           />
                         </div>
                       </div>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-3 gap-4">
                         <div>
                           <Label htmlFor="accountDigit" className="mb-2 block font-medium">Dígito</Label>
                           <Input
@@ -1145,7 +1145,7 @@ export default function Cooperados() {
       
       {/* Dialog de Edição */}
       <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto p-8">
           <DialogHeader>
             <DialogTitle>Editar Cooperado</DialogTitle>
             <DialogDescription>Atualize os dados do cooperado</DialogDescription>
