@@ -219,3 +219,11 @@
 ## Correção de Erro em Cooperados
 - [x] Corrigir tratamento de campos de data (birthDate, admissionDate, terminationDate) na função handleEdit
 - [x] Testar edição de cooperados com datas nulas e preenchidas
+
+## Melhorias UX no Formulário de Cooperados
+- [x] Criar seções visuais com títulos (Dados Pessoais, Telefones, Endereço, Dados Bancários)
+- [x] Aumentar espaçamento entre label e input (mb-2 ou mb-3)
+- [x] Marcar campos obrigatórios com label em vermelho e asterisco
+- [x] Adicionar código internacional nos campos de telefone (default +55 Brasil)
+- [x] Incluir campos de dados bancários no formulário de cadastro
+- [x] Testar cadastro completo com todas as seções

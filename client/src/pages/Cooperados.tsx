@@ -81,6 +81,15 @@ export default function Cooperados() {
   const [state, setState] = useState("");
   const [zipCode, setZipCode] = useState("");
   
+  // Dados Bancários
+  const [bankCode, setBankCode] = useState("");
+  const [bankName, setBankName] = useState("");
+  const [accountType, setAccountType] = useState<"salario" | "corrente" | "poupanca">("corrente");
+  const [agency, setAgency] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [accountDigit, setAccountDigit] = useState("");
+  const [pixKey, setPixKey] = useState("");
+  
   // Estados para modal de edição
   const [openEdit, setOpenEdit] = useState(false);
   const [editingCooperado, setEditingCooperado] = useState<Cooperado | null>(null);
@@ -146,6 +155,13 @@ export default function Cooperados() {
       setCity("");
       setState("");
       setZipCode("");
+      setBankCode("");
+      setBankName("");
+      setAccountType("corrente");
+      setAgency("");
+      setAccountNumber("");
+      setAccountDigit("");
+      setPixKey("");
     },
     onError: (error) => {
       toast.error(`Erro ao criar cooperado: ${error.message}`);
@@ -197,6 +213,14 @@ export default function Cooperados() {
       city: city || undefined,
       state: state || undefined,
       zipCode: zipCode || undefined,
+      // Dados Bancários
+      bankCode: bankCode || undefined,
+      bankName: bankName || undefined,
+      accountType: accountType || undefined,
+      agency: agency || undefined,
+      accountNumber: accountNumber || undefined,
+      accountDigit: accountDigit || undefined,
+      pixKey: pixKey || undefined,
       status: "ativo",
     });
   };
@@ -413,10 +437,10 @@ export default function Cooperados() {
                   <form onSubmit={handleCreate} className="space-y-6">
                     {/* Dados Pessoais */}
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold border-b pb-2">Dados Pessoais</h3>
+                      <h3 className="text-lg font-semibold border-b pb-2 text-blue-700">Dados Pessoais</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="registrationNumber">Matricula *</Label>
+                          <Label htmlFor="registrationNumber" className="text-red-600 mb-2 block">Matricula *</Label>
                           <Input
                             id="registrationNumber"
                             type="number"
@@ -426,17 +450,18 @@ export default function Cooperados() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="document">CPF *</Label>
+                          <Label htmlFor="document" className="text-red-600 mb-2 block">CPF *</Label>
                           <Input
                             id="document"
                             value={document}
                             onChange={(e) => setDocument(e.target.value)}
+                            placeholder="000.000.000-00"
                             required
                           />
                         </div>
                       </div>
                       <div>
-                        <Label htmlFor="name">Nome Completo *</Label>
+                        <Label htmlFor="name" className="text-red-600 mb-2 block">Nome Completo *</Label>
                         <Input
                           id="name"
                           value={name}
@@ -446,7 +471,7 @@ export default function Cooperados() {
                       </div>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <Label htmlFor="birthDate">Data de Nascimento</Label>
+                          <Label htmlFor="birthDate" className="mb-2 block">Data de Nascimento</Label>
                           <Input
                             id="birthDate"
                             type="date"
@@ -455,7 +480,7 @@ export default function Cooperados() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="admissionDate">Data de Admissao</Label>
+                          <Label htmlFor="admissionDate" className="mb-2 block">Data de Admissao</Label>
                           <Input
                             id="admissionDate"
                             type="date"
@@ -464,7 +489,7 @@ export default function Cooperados() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="position">Cargo</Label>
+                          <Label htmlFor="position" className="mb-2 block">Cargo</Label>
                           <Input
                             id="position"
                             value={position}
@@ -474,7 +499,7 @@ export default function Cooperados() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="contractId">Contrato</Label>
+                          <Label htmlFor="contractId" className="mb-2 block">Contrato</Label>
                           <Select value={contractId} onValueChange={setContractId}>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione o contrato" />
@@ -490,7 +515,7 @@ export default function Cooperados() {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="email">Email</Label>
+                          <Label htmlFor="email" className="mb-2 block">Email</Label>
                           <Input
                             id="email"
                             type="email"
@@ -503,35 +528,51 @@ export default function Cooperados() {
                     
                     {/* Telefones */}
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold border-b pb-2">Telefones</h3>
+                      <h3 className="text-lg font-semibold border-b pb-2 text-blue-700">Telefones</h3>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="whatsappNumber">Nr WhatsApp</Label>
-                          <Input
-                            id="whatsappNumber"
-                            value={whatsappNumber}
-                            onChange={(e) => setWhatsappNumber(e.target.value)}
-                            placeholder="(00) 00000-0000"
-                          />
+                          <Label htmlFor="whatsappNumber" className="mb-2 block">Nr WhatsApp</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              value="+55"
+                              disabled
+                              className="w-20"
+                            />
+                            <Input
+                              id="whatsappNumber"
+                              value={whatsappNumber}
+                              onChange={(e) => setWhatsappNumber(e.target.value)}
+                              placeholder="(00) 00000-0000"
+                              className="flex-1"
+                            />
+                          </div>
                         </div>
                         <div>
-                          <Label htmlFor="secondaryPhone">Telefone Secundario</Label>
-                          <Input
-                            id="secondaryPhone"
-                            value={secondaryPhone}
-                            onChange={(e) => setSecondaryPhone(e.target.value)}
-                            placeholder="(00) 0000-0000"
-                          />
+                          <Label htmlFor="secondaryPhone" className="mb-2 block">Telefone Secundario</Label>
+                          <div className="flex gap-2">
+                            <Input
+                              value="+55"
+                              disabled
+                              className="w-20"
+                            />
+                            <Input
+                              id="secondaryPhone"
+                              value={secondaryPhone}
+                              onChange={(e) => setSecondaryPhone(e.target.value)}
+                              placeholder="(00) 0000-0000"
+                              className="flex-1"
+                            />
+                          </div>
                         </div>
                       </div>
                     </div>
                     
                     {/* Endereço */}
                     <div className="space-y-4">
-                      <h3 className="text-lg font-semibold border-b pb-2">Endereco</h3>
+                      <h3 className="text-lg font-semibold border-b pb-2 text-blue-700">Endereco</h3>
                       <div className="grid grid-cols-3 gap-4">
                         <div className="col-span-2">
-                          <Label htmlFor="street">Logradouro</Label>
+                          <Label htmlFor="street" className="mb-2 block">Logradouro</Label>
                           <Input
                             id="street"
                             value={street}
@@ -540,7 +581,7 @@ export default function Cooperados() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="addressNumber">Numero</Label>
+                          <Label htmlFor="addressNumber" className="mb-2 block">Numero</Label>
                           <Input
                             id="addressNumber"
                             value={addressNumber}
@@ -550,7 +591,7 @@ export default function Cooperados() {
                       </div>
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <Label htmlFor="neighborhood">Bairro</Label>
+                          <Label htmlFor="neighborhood" className="mb-2 block">Bairro</Label>
                           <Input
                             id="neighborhood"
                             value={neighborhood}
@@ -558,7 +599,7 @@ export default function Cooperados() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="complement">Complemento</Label>
+                          <Label htmlFor="complement" className="mb-2 block">Complemento</Label>
                           <Input
                             id="complement"
                             value={complement}
@@ -569,7 +610,7 @@ export default function Cooperados() {
                       </div>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <Label htmlFor="city">Cidade</Label>
+                          <Label htmlFor="city" className="mb-2 block">Cidade</Label>
                           <Input
                             id="city"
                             value={city}
@@ -577,7 +618,7 @@ export default function Cooperados() {
                           />
                         </div>
                         <div>
-                          <Label htmlFor="state">UF</Label>
+                          <Label htmlFor="state" className="mb-2 block">UF</Label>
                           <Select value={state} onValueChange={setState}>
                             <SelectTrigger>
                               <SelectValue placeholder="Selecione" />
@@ -592,12 +633,92 @@ export default function Cooperados() {
                           </Select>
                         </div>
                         <div>
-                          <Label htmlFor="zipCode">CEP</Label>
+                          <Label htmlFor="zipCode" className="mb-2 block">CEP</Label>
                           <Input
                             id="zipCode"
                             value={zipCode}
                             onChange={(e) => setZipCode(e.target.value)}
                             placeholder="00000-000"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Dados Bancários */}
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold border-b pb-2 text-blue-700">Dados Bancarios</h3>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="bankCode" className="mb-2 block">Codigo do Banco</Label>
+                          <Input
+                            id="bankCode"
+                            value={bankCode}
+                            onChange={(e) => setBankCode(e.target.value)}
+                            placeholder="000"
+                            maxLength={3}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="bankName" className="mb-2 block">Nome do Banco</Label>
+                          <Input
+                            id="bankName"
+                            value={bankName}
+                            onChange={(e) => setBankName(e.target.value)}
+                            placeholder="Ex: Banco do Brasil"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <Label htmlFor="accountType" className="mb-2 block">Tipo de Conta</Label>
+                          <Select value={accountType} onValueChange={(v) => setAccountType(v as "salario" | "corrente" | "poupanca")}>
+                            <SelectTrigger>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="salario">Salario</SelectItem>
+                              <SelectItem value="corrente">Corrente</SelectItem>
+                              <SelectItem value="poupanca">Poupanca</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <Label htmlFor="agency" className="mb-2 block">Agencia</Label>
+                          <Input
+                            id="agency"
+                            value={agency}
+                            onChange={(e) => setAgency(e.target.value)}
+                            placeholder="0000"
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="accountNumber" className="mb-2 block">Conta</Label>
+                          <Input
+                            id="accountNumber"
+                            value={accountNumber}
+                            onChange={(e) => setAccountNumber(e.target.value)}
+                            placeholder="00000"
+                          />
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label htmlFor="accountDigit" className="mb-2 block">Digito</Label>
+                          <Input
+                            id="accountDigit"
+                            value={accountDigit}
+                            onChange={(e) => setAccountDigit(e.target.value)}
+                            placeholder="0"
+                            maxLength={2}
+                          />
+                        </div>
+                        <div>
+                          <Label htmlFor="pixKey" className="mb-2 block">Chave PIX</Label>
+                          <Input
+                            id="pixKey"
+                            value={pixKey}
+                            onChange={(e) => setPixKey(e.target.value)}
+                            placeholder="CPF, Email, Telefone ou Chave Aleatoria"
                           />
                         </div>
                       </div>

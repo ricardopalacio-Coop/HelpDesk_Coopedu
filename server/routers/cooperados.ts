@@ -51,10 +51,21 @@ export const cooperadosRouter = router({
       city: z.string().optional(),
       state: z.string().optional(),
       zipCode: z.string().optional(),
+      // Dados Bancários
+      bankCode: z.string().optional(),
+      bankName: z.string().optional(),
+      accountType: z.enum(["salario", "corrente", "poupanca"]).optional(),
+      agency: z.string().optional(),
+      accountNumber: z.string().optional(),
+      accountDigit: z.string().optional(),
+      pixKey: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
+      // Separar dados bancários do input
+      const { bankCode, bankName, accountType, agency, accountNumber, accountDigit, pixKey, ...cooperadoData } = input;
+      
       const id = await db.createCooperado({
-        ...input,
+        ...cooperadoData,
         name: normalizeText(input.name),
         document: normalizeText(input.document),
         position: input.position ? normalizeText(input.position) : undefined,
@@ -65,6 +76,22 @@ export const cooperadosRouter = router({
         admissionDate: input.admissionDate || null,
         terminationDate: null,
       });
+      
+      // Salvar dados bancários se fornecidos
+      if (bankCode && bankName && accountType && agency && accountNumber) {
+        await db.upsertCooperadoBankData({
+          cooperadoId: id,
+          bankCode: normalizeText(bankCode),
+          bankName: normalizeText(bankName),
+          accountType,
+          agency: normalizeText(agency),
+          accountNumber: normalizeText(accountNumber),
+          accountDigit: accountDigit ? normalizeText(accountDigit) : undefined,
+          pixKey: pixKey || undefined,
+          isActive: true,
+        });
+      }
+      
       return { id };
     }),
 
@@ -92,6 +119,14 @@ export const cooperadosRouter = router({
       city: z.string().optional(),
       state: z.string().optional(),
       zipCode: z.string().optional(),
+      // Dados Bancários
+      bankCode: z.string().optional(),
+      bankName: z.string().optional(),
+      accountType: z.enum(["salario", "corrente", "poupanca"]).optional(),
+      agency: z.string().optional(),
+      accountNumber: z.string().optional(),
+      accountDigit: z.string().optional(),
+      pixKey: z.string().optional(),
     }))
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
