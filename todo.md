@@ -279,3 +279,7 @@
 ## Novos Bugs Reportados
 - [x] Menu lateral desaparece ao entrar na página Cooperados (RESOLVIDO - adicionado DashboardLayout)
 - [x] Remover campo "Data de Admissão" do formulário de cooperados (CONCLUÍDO - removido de cadastro e edição)
+
+## BUG CRÍTICO - Menu Incorreto
+- [x] Página Cooperados mostra menu simplificado (Navigation, Page 1, Page 2) em vez do menu completo (RESOLVIDO - substituído DashboardLayout por Layout)
+- [x] Menu deve ser igual ao da página Contratos (Dashboard, Tickets, WhatsApp, Cooperados, Contratos, Departamentos, Relatórios, Configurações) (CONCLUÍDO)

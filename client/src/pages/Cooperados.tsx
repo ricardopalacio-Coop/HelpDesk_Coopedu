@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from "react";
-import DashboardLayout from "@/components/DashboardLayout";
+import { Layout } from "@/components/Layout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -461,8 +461,8 @@ export default function Cooperados() {
   };
   
   return (
-    <DashboardLayout>
-      <div className="container py-8">
+    <Layout>
+      <div className="space-y-6">
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
@@ -1368,6 +1368,6 @@ export default function Cooperados() {
         </AlertDialogContent>
       </AlertDialog>
       </div>
-    </DashboardLayout>
+    </Layout>
   );
 }
