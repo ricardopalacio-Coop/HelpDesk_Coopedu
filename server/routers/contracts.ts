@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { normalizeText } from "../../shared/textUtils";
 
 export const contractsRouter = router({
   // Listar todos os contratos com filtros
@@ -39,6 +40,9 @@ export const contractsRouter = router({
     .mutation(async ({ input }) => {
       const id = await db.createContract({
         ...input,
+        name: normalizeText(input.name),
+        city: normalizeText(input.city),
+        state: normalizeText(input.state),
         validityDate: input.validityDate || null,
         isSpecial: false,
       });
@@ -58,7 +62,13 @@ export const contractsRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
-      await db.updateContract(id, data);
+      const normalizedData = {
+        ...data,
+        ...(data.name && { name: normalizeText(data.name) }),
+        ...(data.city && { city: normalizeText(data.city) }),
+        ...(data.state && { state: normalizeText(data.state) }),
+      };
+      await db.updateContract(id, normalizedData);
       return { success: true };
     }),
 });

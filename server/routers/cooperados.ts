@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { publicProcedure, protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { normalizeText } from "../../shared/textUtils";
 
 export const cooperadosRouter = router({
   // Listar todos os cooperados com filtros
@@ -44,6 +45,10 @@ export const cooperadosRouter = router({
     .mutation(async ({ input }) => {
       const id = await db.createCooperado({
         ...input,
+        name: normalizeText(input.name),
+        document: normalizeText(input.document),
+        position: input.position ? normalizeText(input.position) : undefined,
+        address: input.address ? normalizeText(input.address) : undefined,
         birthDate: input.birthDate || null,
         admissionDate: input.admissionDate || null,
         terminationDate: null,
@@ -68,7 +73,14 @@ export const cooperadosRouter = router({
     }))
     .mutation(async ({ input }) => {
       const { id, ...data } = input;
-      await db.updateCooperado(id, data);
+      const normalizedData = {
+        ...data,
+        ...(data.name && { name: normalizeText(data.name) }),
+        ...(data.document && { document: normalizeText(data.document) }),
+        ...(data.position && { position: normalizeText(data.position) }),
+        ...(data.address && { address: normalizeText(data.address) }),
+      };
+      await db.updateCooperado(id, normalizedData);
       return { success: true };
     }),
 
@@ -89,6 +101,7 @@ export const cooperadosRouter = router({
       .mutation(async ({ input }) => {
         const id = await db.addCooperadoPhone({
           ...input,
+          phone: normalizeText(input.phone),
           isActive: true,
         });
         return { id };
@@ -103,7 +116,11 @@ export const cooperadosRouter = router({
       }))
       .mutation(async ({ input }) => {
         const { id, ...data } = input;
-        await db.updateCooperadoPhone(id, data);
+        const normalizedData = {
+          ...data,
+          ...(data.phone && { phone: normalizeText(data.phone) }),
+        };
+        await db.updateCooperadoPhone(id, normalizedData);
         return { success: true };
       }),
   }),
@@ -139,6 +156,11 @@ export const cooperadosRouter = router({
         
         const id = await db.upsertCooperadoBankData({
           ...input,
+          bankName: normalizeText(input.bankName),
+          agency: normalizeText(input.agency),
+          accountNumber: normalizeText(input.accountNumber),
+          accountDigit: input.accountDigit ? normalizeText(input.accountDigit) : undefined,
+          pixKey: input.pixKey ? normalizeText(input.pixKey) : undefined,
           isActive: true,
         });
         return { id };

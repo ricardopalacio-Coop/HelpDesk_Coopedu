@@ -158,3 +158,11 @@
 ## Ajuste no Cadastro de Contratos
 - [x] Adicionar campo nome do contrato separado no formulário
 - [x] Permitir edição independente de nome, cidade e UF
+
+## Normalização de Texto
+- [x] Criar função utilitária de normalização de texto (maiúsculas, sem acentos, ç→C)
+- [x] Aplicar normalização nas APIs de contratos
+- [x] Aplicar normalização nas APIs de cooperados
+- [x] Aplicar normalização nas APIs de departamentos
+- [x] Aplicar normalização na API de usuários/profiles
+- [x] Testar normalização em todos os cadastros

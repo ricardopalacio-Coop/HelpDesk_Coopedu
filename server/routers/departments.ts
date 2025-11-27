@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import * as db from "../db";
+import { normalizeText } from "../../shared/textUtils";
 
 export const departmentsRouter = router({
   // Listar todos os departamentos
@@ -31,6 +32,8 @@ export const departmentsRouter = router({
       
       const id = await db.createDepartment({
         ...input,
+        name: normalizeText(input.name),
+        description: input.description ? normalizeText(input.description) : undefined,
         isActive: true,
       });
       return { id };
@@ -52,7 +55,12 @@ export const departmentsRouter = router({
       }
       
       const { id, ...data } = input;
-      await db.updateDepartment(id, data);
+      const normalizedData = {
+        ...data,
+        ...(data.name && { name: normalizeText(data.name) }),
+        ...(data.description && { description: normalizeText(data.description) }),
+      };
+      await db.updateDepartment(id, normalizedData);
       return { success: true };
     }),
 });
@@ -87,6 +95,8 @@ export const attendanceReasonsRouter = router({
       
       const id = await db.createAttendanceReason({
         ...input,
+        name: normalizeText(input.name),
+        description: input.description ? normalizeText(input.description) : undefined,
         isActive: true,
       });
       return { id };
@@ -109,7 +119,12 @@ export const attendanceReasonsRouter = router({
       }
       
       const { id, ...data } = input;
-      await db.updateAttendanceReason(id, data);
+      const normalizedData = {
+        ...data,
+        ...(data.name && { name: normalizeText(data.name) }),
+        ...(data.description && { description: normalizeText(data.description) }),
+      };
+      await db.updateAttendanceReason(id, normalizedData);
       return { success: true };
     }),
 });

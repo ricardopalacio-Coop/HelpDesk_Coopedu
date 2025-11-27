@@ -14,6 +14,7 @@ import {
 
 export { whatsappSessionsTable as whatsappSessions };
 import { ENV } from './_core/env';
+import { normalizeText } from '../shared/textUtils';
 
 let _db: ReturnType<typeof drizzle> | null = null;
 
@@ -57,7 +58,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     const assignNullable = (field: TextField) => {
       const value = user[field];
       if (value === undefined) return;
-      const normalized = value ?? null;
+      const normalized = value ? normalizeText(value) : null;
       values[field] = normalized;
       updateSet[field] = normalized;
     };
@@ -113,7 +114,12 @@ export async function createProfile(profile: InsertProfile) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const result = await db.insert(profiles).values(profile);
+  const normalizedProfile = {
+    ...profile,
+    fullName: normalizeText(profile.fullName),
+  };
+  
+  const result = await db.insert(profiles).values(normalizedProfile);
   return result[0].insertId;
 }
 
@@ -129,7 +135,12 @@ export async function updateProfile(id: number, data: Partial<InsertProfile>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  await db.update(profiles).set(data).where(eq(profiles.id, id));
+  const normalizedData = {
+    ...data,
+    ...(data.fullName && { fullName: normalizeText(data.fullName) }),
+  };
+  
+  await db.update(profiles).set(normalizedData).where(eq(profiles.id, id));
 }
 
 // ============================================================================
