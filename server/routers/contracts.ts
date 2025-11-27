@@ -67,6 +67,8 @@ export const contractsRouter = router({
         ...(data.name && { name: normalizeText(data.name) }),
         ...(data.city && { city: normalizeText(data.city) }),
         ...(data.state && { state: normalizeText(data.state) }),
+        // Garantir que validityDate seja null se não fornecido
+        ...(data.validityDate !== undefined && { validityDate: data.validityDate || null }),
       };
       await db.updateContract(id, normalizedData);
       return { success: true };

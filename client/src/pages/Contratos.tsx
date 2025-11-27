@@ -146,7 +146,7 @@ export default function Contratos() {
       city: editCity,
       state: editState,
       status: editStatus,
-      validityDate: editValidityDate || undefined,
+      validityDate: editValidityDate && editValidityDate.trim() !== "" ? editValidityDate : undefined,
     });
   };
   
