@@ -304,3 +304,7 @@ OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
 - [x] Adicionar ícone "Declaração de Produtividade" após Demonstrativo de Pagamento
 - [x] Ambos devem exibir toast "Em Desenvolvimento" ao clicar
 - [x] Testar funcionalidade dos ícones
+
+## Correção de Dados Bancários
+- [x] Alterar nome do banco código 450 de "FITBANK IP" para "OWLBANK"
+- [x] Validar alteração no modal de dados bancários

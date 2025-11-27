@@ -1,0 +1,9 @@
+{
+  "query": "UPDATE cooperado_bank_data SET bankName = 'OWLBANK' WHERE bankCode = '450'",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2hPAEuH5YyprVTa.root --database kgpdAMRP8s25k8w5kNks6w --execute UPDATE cooperado_bank_data SET bankName = 'OWLBANK' WHERE bankCode = '450'",
+  "rows": [],
+  "messages": [],
+  "stdout": "",
+  "stderr": "",
+  "execution_time_ms": 51
+}
