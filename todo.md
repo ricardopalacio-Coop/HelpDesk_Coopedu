@@ -215,3 +215,7 @@
 - [x] Atualizar schema do banco de dados
 - [x] Executar migrations
 - [x] Testar cadastro completo com todos os campos
+
+## Correção de Erro em Cooperados
+- [x] Corrigir tratamento de campos de data (birthDate, admissionDate, terminationDate) na função handleEdit
+- [x] Testar edição de cooperados com datas nulas e preenchidas

@@ -206,9 +206,10 @@ export default function Cooperados() {
     setEditRegistrationNumber(cooperado.registrationNumber.toString());
     setEditName(cooperado.name);
     setEditDocument(cooperado.document);
-    setEditBirthDate(cooperado.birthDate ? cooperado.birthDate.split('T')[0] : "");
-    setEditAdmissionDate(cooperado.admissionDate ? cooperado.admissionDate.split('T')[0] : "");
-    setEditTerminationDate(cooperado.terminationDate ? cooperado.terminationDate.split('T')[0] : "");
+    // Tratar datas que podem vir como string ou Date
+    setEditBirthDate(cooperado.birthDate ? (typeof cooperado.birthDate === 'string' ? cooperado.birthDate.split('T')[0] : new Date(cooperado.birthDate).toISOString().split('T')[0]) : "");
+    setEditAdmissionDate(cooperado.admissionDate ? (typeof cooperado.admissionDate === 'string' ? cooperado.admissionDate.split('T')[0] : new Date(cooperado.admissionDate).toISOString().split('T')[0]) : "");
+    setEditTerminationDate(cooperado.terminationDate ? (typeof cooperado.terminationDate === 'string' ? cooperado.terminationDate.split('T')[0] : new Date(cooperado.terminationDate).toISOString().split('T')[0]) : "");
     setEditPosition(cooperado.position || "");
     setEditStatus(cooperado.status as "ativo" | "inativo" | "sem_producao");
     setEditContractId(cooperado.contractId ? cooperado.contractId.toString() : "sem_contrato");
