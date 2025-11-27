@@ -24,6 +24,7 @@ import { toast } from "sonner";
 export default function Contratos() {
   const { data: contracts, isLoading } = trpc.contracts.list.useQuery();
   const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [validityDate, setValidityDate] = useState("");
@@ -33,6 +34,7 @@ export default function Contratos() {
     onSuccess: () => {
       toast.success("Contrato criado com sucesso!");
       setOpen(false);
+      setName("");
       setCity("");
       setState("");
       setValidityDate("");
@@ -48,7 +50,7 @@ export default function Contratos() {
     const formData = new FormData(e.currentTarget);
     
     createMutation.mutate({
-      name: city,
+      name: name,
       city: city,
       state: state,
       status: "ativo",
@@ -84,10 +86,21 @@ export default function Contratos() {
               <DialogHeader>
                 <DialogTitle>Novo Contrato</DialogTitle>
                 <DialogDescription>
-                  Preencha os dados do contrato. O nome será automaticamente o nome da cidade.
+                  Preencha os dados do contrato
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">Nome do Contrato *</Label>
+                  <Input
+                    id="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Digite o nome do contrato"
+                    required
+                  />
+                </div>
+                
                 <div className="space-y-2">
                   <Label htmlFor="city">Cidade *</Label>
                   <Input

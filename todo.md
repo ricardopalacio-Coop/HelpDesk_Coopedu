@@ -154,3 +154,7 @@
 - [x] Implementar auto-preenchimento do nome do contrato com nome da cidade
 - [x] Tornar campos obrigatórios (nome, cidade, UF)
 - [x] Executar migrations do banco de dados
+
+## Ajuste no Cadastro de Contratos
+- [x] Adicionar campo nome do contrato separado no formulário
+- [x] Permitir edição independente de nome, cidade e UF
