@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Plus, Pencil, Trash2, Search, FileSpreadsheet, FileText, X, ArrowUpDown, ArrowUp, ArrowDown, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Search, FileSpreadsheet, FileText, X, ArrowUpDown, ArrowUp, ArrowDown, CheckCircle2, AlertCircle, Loader2, CreditCard } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -150,6 +150,16 @@ export default function Cooperados() {
   
   // Estados para modal de edição
   const [openEdit, setOpenEdit] = useState(false);
+  
+  // Estados para modal de dados bancários
+  const [openBankData, setOpenBankData] = useState(false);
+  const [selectedCooperadoId, setSelectedCooperadoId] = useState<number | null>(null);
+  
+  // Query para buscar dados bancários
+  const { data: bankData, isLoading: isBankDataLoading } = trpc.cooperados.bankData.get.useQuery(
+    { cooperadoId: selectedCooperadoId! },
+    { enabled: selectedCooperadoId !== null }
+  );
   const [editingCooperado, setEditingCooperado] = useState<Cooperado | null>(null);
   const [editRegistrationNumber, setEditRegistrationNumber] = useState("");
   const [editName, setEditName] = useState("");
@@ -1101,7 +1111,19 @@ export default function Cooperados() {
                             <Button
                               variant="ghost"
                               size="sm"
+                              onClick={() => {
+                                setSelectedCooperadoId(cooperado.id);
+                                setOpenBankData(true);
+                              }}
+                              title="Ver Dados Bancários"
+                            >
+                              <CreditCard className="h-4 w-4 text-blue-600" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => handleEdit(cooperado)}
+                              title="Editar Cooperado"
                             >
                               <Pencil className="h-4 w-4" />
                             </Button>
@@ -1367,6 +1389,79 @@ export default function Cooperados() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+      
+      {/* Modal de Dados Bancários */}
+      <Dialog open={openBankData} onOpenChange={setOpenBankData}>
+        <DialogContent className="w-[95vw] max-w-[600px] p-8">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold">Dados Bancários</DialogTitle>
+            <DialogDescription>
+              Informações bancárias do cooperado
+            </DialogDescription>
+          </DialogHeader>
+          
+          {isBankDataLoading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+            </div>
+          ) : bankData ? (
+            <div className="space-y-6 mt-6">
+              {/* Informações do Banco */}
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-950/20 dark:to-cyan-950/20 p-6 rounded-lg border border-blue-200 dark:border-blue-800">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-blue-600" />
+                  Informações Bancárias
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Código do Banco</Label>
+                    <p className="text-base font-medium mt-1">{bankData.bankCode || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Nome do Banco</Label>
+                    <p className="text-base font-medium mt-1">{bankData.bankName || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Tipo de Conta</Label>
+                    <p className="text-base font-medium mt-1">
+                      {bankData.accountType === "corrente" && "Conta Corrente"}
+                      {bankData.accountType === "poupanca" && "Conta Poupança"}
+                      {bankData.accountType === "salario" && "Conta Salário"}
+                      {!bankData.accountType && "-"}
+                    </p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Agência</Label>
+                    <p className="text-base font-medium mt-1">{bankData.agency || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Conta</Label>
+                    <p className="text-base font-medium mt-1">{bankData.accountNumber || "-"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm text-muted-foreground">Dígito</Label>
+                    <p className="text-base font-medium mt-1">{bankData.accountDigit || "-"}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-sm text-muted-foreground">Chave PIX</Label>
+                    <p className="text-base font-medium mt-1 break-all">{bankData.pixKey || "-"}</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end">
+                <Button onClick={() => setOpenBankData(false)}>
+                  Fechar
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <p>Nenhum dado bancário cadastrado para este cooperado.</p>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
       </div>
     </Layout>
   );

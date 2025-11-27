@@ -283,3 +283,9 @@
 ## BUG CRÍTICO - Menu Incorreto
 - [x] Página Cooperados mostra menu simplificado (Navigation, Page 1, Page 2) em vez do menu completo (RESOLVIDO - substituído DashboardLayout por Layout)
 - [x] Menu deve ser igual ao da página Contratos (Dashboard, Tickets, WhatsApp, Cooperados, Contratos, Departamentos, Relatórios, Configurações) (CONCLUÍDO)
+
+## Nova Funcionalidade - Visualização de Dados Bancários
+- [x] Adicionar ícone "Dados Bancários" na coluna Ações (ao lado do editar)
+- [x] Criar modal que exibe apenas informações bancárias do cooperado
+- [x] Modal deve mostrar: Banco, Agência, Conta, Dígito, Tipo de Conta, Chave PIX
+- [x] Testar abertura do modal e exibição dos dados
