@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -68,6 +68,7 @@ export default function Cooperados() {
   const [admissionDate, setAdmissionDate] = useState("");
   const [associationDate, setAssociationDate] = useState("");
   const [position, setPosition] = useState("");
+  const [status, setStatus] = useState("ativo");
   const [contractId, setContractId] = useState("");
   const [email, setEmail] = useState("");
   
@@ -94,6 +95,13 @@ export default function Cooperados() {
   const [accountNumber, setAccountNumber] = useState("");
   const [accountDigit, setAccountDigit] = useState("");
   const [pixKey, setPixKey] = useState("");
+  
+  // Atualizar PIX automaticamente quando CPF mudar
+  useEffect(() => {
+    if (document && !pixKey) {
+      setPixKey(document);
+    }
+  }, [document]);
   
   // Estados para modal de edição
   const [openEdit, setOpenEdit] = useState(false);
@@ -148,7 +156,9 @@ export default function Cooperados() {
       setDocument("");
       setBirthDate("");
       setAdmissionDate("");
+      setAssociationDate("");
       setPosition("");
+      setStatus("ativo");
       setContractId("");
       setEmail("");
       setWhatsappNumber("");
@@ -206,6 +216,7 @@ export default function Cooperados() {
       document,
       birthDate: birthDate || undefined,
       admissionDate: admissionDate || undefined,
+      associationDate: associationDate || undefined,
       position: position || undefined,
       contractId: (contractId && contractId !== "sem_contrato") ? parseInt(contractId) : undefined,
       email: email || undefined,
@@ -226,7 +237,7 @@ export default function Cooperados() {
       accountNumber: accountNumber || undefined,
       accountDigit: accountDigit || undefined,
       pixKey: pixKey || undefined,
-      status: "ativo",
+      status: status as "ativo" | "inativo" | "sem_producao" | "desligado",
     });
   };
   
@@ -443,7 +454,7 @@ export default function Cooperados() {
                     {/* Dados Pessoais */}
                     <div className="space-y-4">
                       <h3 className="text-lg font-semibold border-b pb-2 text-blue-700">Dados Pessoais</h3>
-                      <div className="grid grid-cols-2 gap-4">
+                      <div className="grid grid-cols-4 gap-4">
                         <div>
                           <Label htmlFor="registrationNumber" className="text-red-600 mb-2 block">Matricula *</Label>
                           <Input
@@ -455,6 +466,15 @@ export default function Cooperados() {
                           />
                         </div>
                         <div>
+                          <Label htmlFor="associationDate" className="mb-2 block">Data Associacao</Label>
+                          <Input
+                            id="associationDate"
+                            type="date"
+                            value={associationDate}
+                            onChange={(e) => setAssociationDate(e.target.value)}
+                          />
+                        </div>
+                        <div>
                           <Label htmlFor="document" className="text-red-600 mb-2 block">CPF *</Label>
                           <Input
                             id="document"
@@ -463,6 +483,20 @@ export default function Cooperados() {
                             placeholder="000.000.000-00"
                             required
                           />
+                        </div>
+                        <div>
+                          <Label htmlFor="status" className="mb-2 block">Status</Label>
+                          <Select value={status} onValueChange={setStatus}>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Selecione o status" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="ativo">Ativo</SelectItem>
+                              <SelectItem value="inativo">Inativo</SelectItem>
+                              <SelectItem value="sem_producao">Sem Producao</SelectItem>
+                              <SelectItem value="desligado">Desligado</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                       <div>
@@ -539,8 +573,9 @@ export default function Cooperados() {
                           <Label htmlFor="whatsappNumber" className="mb-2 block">Nr WhatsApp</Label>
                           <div className="flex gap-2">
                             <Input
-                              value="+55"
-                              disabled
+                              value={whatsappCountryCode}
+                              onChange={(e) => setWhatsappCountryCode(e.target.value)}
+                              placeholder="+55"
                               className="w-20"
                             />
                             <Input
@@ -556,8 +591,9 @@ export default function Cooperados() {
                           <Label htmlFor="secondaryPhone" className="mb-2 block">Telefone Secundario</Label>
                           <div className="flex gap-2">
                             <Input
-                              value="+55"
-                              disabled
+                              value={secondaryCountryCode}
+                              onChange={(e) => setSecondaryCountryCode(e.target.value)}
+                              placeholder="+55"
                               className="w-20"
                             />
                             <Input
@@ -658,10 +694,26 @@ export default function Cooperados() {
                           <Input
                             id="bankCode"
                             value={bankCode}
-                            onChange={(e) => setBankCode(e.target.value)}
+                            onChange={(e) => {
+                              const codigo = e.target.value;
+                              setBankCode(codigo);
+                              // Buscar banco por código e preencher nome automaticamente
+                              const banco = BANCOS_BRASIL.find(b => b.codigo === codigo);
+                              if (banco) {
+                                setBankName(banco.nome);
+                              }
+                            }}
                             placeholder="000"
                             maxLength={3}
+                            list="bancos-list"
                           />
+                          <datalist id="bancos-list">
+                            {BANCOS_BRASIL.map(banco => (
+                              <option key={banco.codigo} value={banco.codigo}>
+                                {banco.codigo} - {banco.nome}
+                              </option>
+                            ))}
+                          </datalist>
                         </div>
                         <div>
                           <Label htmlFor="bankName" className="mb-2 block">Nome do Banco</Label>
@@ -670,6 +722,8 @@ export default function Cooperados() {
                             value={bankName}
                             onChange={(e) => setBankName(e.target.value)}
                             placeholder="Ex: Banco do Brasil"
+                            disabled
+                            className="bg-muted"
                           />
                         </div>
                       </div>

@@ -7,7 +7,7 @@ export const cooperadosRouter = router({
   // Listar todos os cooperados com filtros
   list: protectedProcedure
     .input(z.object({
-      status: z.enum(["ativo", "inativo", "sem_producao"]).optional(),
+      status: z.enum(["ativo", "inativo", "sem_producao", "desligado"]).optional(),
       search: z.string().optional(),
     }).optional())
     .query(async ({ input }) => {
@@ -36,8 +36,9 @@ export const cooperadosRouter = router({
       document: z.string().min(1),
       birthDate: z.string().optional(),
       admissionDate: z.string().optional(),
+      associationDate: z.string().optional(),
       position: z.string().optional(),
-      status: z.enum(["ativo", "inativo", "sem_producao"]).default("ativo"),
+      status: z.enum(["ativo", "inativo", "sem_producao", "desligado"]).default("ativo"),
       contractId: z.number().optional(),
       email: z.string().email().optional(),
       // Telefones
@@ -74,6 +75,7 @@ export const cooperadosRouter = router({
         city: input.city ? normalizeText(input.city) : undefined,
         birthDate: input.birthDate || null,
         admissionDate: input.admissionDate || null,
+        associationDate: input.associationDate || null,
         terminationDate: null,
       });
       
@@ -103,9 +105,10 @@ export const cooperadosRouter = router({
       document: z.string().min(1).optional(),
       birthDate: z.string().optional(),
       admissionDate: z.string().optional(),
+      associationDate: z.string().optional(),
       terminationDate: z.string().optional(),
       position: z.string().optional(),
-      status: z.enum(["ativo", "inativo", "sem_producao"]).optional(),
+      status: z.enum(["ativo", "inativo", "sem_producao", "desligado"]).optional(),
       contractId: z.number().optional(),
       email: z.string().email().optional(),
       // Telefones

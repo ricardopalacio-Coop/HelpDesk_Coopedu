@@ -233,8 +233,10 @@
 - [x] Expandir Status para incluir "Desligado" além de Ativo/Inativo
 - [x] Criar lista de bancos do Brasil com código e nome
 - [x] Adicionar estados para associationDate e códigos internacionais
-- [ ] Implementar campos no formulário de cadastro
-- [ ] Implementar Chave PIX com CPF como default automático
-- [ ] Implementar autocomplete no campo Código do Banco
-- [ ] Atualizar router para aceitar novos campos
-- [ ] Testar cadastro completo com todos os novos campos
+- [x] Atualizar router para aceitar associationDate e códigos internacionais
+- [x] Adicionar campo Data Associação ao lado de Matrícula no formulário
+- [x] Adicionar dropdown de Status com opção "Desligado"
+- [x] Adicionar inputs de código internacional editáveis (default +55)
+- [x] Implementar autocomplete de bancos com busca por código/nome
+- [x] Implementar PIX preenchido automaticamente com CPF
+- [x] Testar cadastro completo com todos os novos campos
