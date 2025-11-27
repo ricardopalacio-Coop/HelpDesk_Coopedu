@@ -11,29 +11,63 @@ import {
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { trpc } from "@/lib/trpc";
-import { Plus, Pencil } from "lucide-react";
+import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { ESTADOS_BRASIL } from "@shared/brasil";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
+
+type Contract = {
+  id: number;
+  name: string;
+  city: string | null;
+  state: string | null;
+  status: string;
+  validityDate: string | null;
+  isSpecial: boolean;
+  createdAt: Date;
+};
 
 export default function Contratos() {
   const { data: contracts, isLoading } = trpc.contracts.list.useQuery();
-  const [open, setOpen] = useState(false);
+  
+  // Estados para modal de criação
+  const [openCreate, setOpenCreate] = useState(false);
   const [name, setName] = useState("");
   const [city, setCity] = useState("");
   const [state, setState] = useState("");
   const [validityDate, setValidityDate] = useState("");
   
+  // Estados para modal de edição
+  const [openEdit, setOpenEdit] = useState(false);
+  const [editingContract, setEditingContract] = useState<Contract | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCity, setEditCity] = useState("");
+  const [editState, setEditState] = useState("");
+  const [editValidityDate, setEditValidityDate] = useState("");
+  const [editStatus, setEditStatus] = useState<"ativo" | "inativo">("ativo");
+  
+  // Estados para exclusão
+  const [openDelete, setOpenDelete] = useState(false);
+  const [deletingContract, setDeletingContract] = useState<Contract | null>(null);
+  
+  // Estados para filtros
+  const [filterName, setFilterName] = useState("");
+  const [filterStatus, setFilterStatus] = useState<"todos" | "ativo" | "inativo">("todos");
+  
   const utils = trpc.useUtils();
+  
+  // Mutation para criar contrato
   const createMutation = trpc.contracts.create.useMutation({
     onSuccess: () => {
       toast.success("Contrato criado com sucesso!");
-      setOpen(false);
+      setOpenCreate(false);
       setName("");
       setCity("");
       setState("");
@@ -45,9 +79,34 @@ export default function Contratos() {
     },
   });
   
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  // Mutation para atualizar contrato
+  const updateMutation = trpc.contracts.update.useMutation({
+    onSuccess: () => {
+      toast.success("Contrato atualizado com sucesso!");
+      setOpenEdit(false);
+      setEditingContract(null);
+      utils.contracts.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`Erro ao atualizar contrato: ${error.message}`);
+    },
+  });
+  
+  // Mutation para excluir contrato (usando update para inativar)
+  const deleteMutation = trpc.contracts.update.useMutation({
+    onSuccess: () => {
+      toast.success("Contrato excluído com sucesso!");
+      setOpenDelete(false);
+      setDeletingContract(null);
+      utils.contracts.list.invalidate();
+    },
+    onError: (error) => {
+      toast.error(`Erro ao excluir contrato: ${error.message}`);
+    },
+  });
+  
+  const handleCreate = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const formData = new FormData(e.currentTarget);
     
     createMutation.mutate({
       name: name,
@@ -57,10 +116,64 @@ export default function Contratos() {
       validityDate: validityDate || undefined,
     });
   };
+  
+  const handleEdit = (contract: Contract) => {
+    setEditingContract(contract);
+    setEditName(contract.name);
+    setEditCity(contract.city || "");
+    setEditState(contract.state || "");
+    setEditValidityDate(contract.validityDate ? contract.validityDate.split('T')[0] : "");
+    setEditStatus(contract.status as "ativo" | "inativo");
+    setOpenEdit(true);
+  };
+  
+  const handleUpdate = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    
+    if (!editingContract) return;
+    
+    updateMutation.mutate({
+      id: editingContract.id,
+      name: editName,
+      city: editCity,
+      state: editState,
+      status: editStatus,
+      validityDate: editValidityDate || undefined,
+    });
+  };
+  
+  const handleDelete = (contract: Contract) => {
+    setDeletingContract(contract);
+    setOpenDelete(true);
+  };
+  
+  const confirmDelete = () => {
+    if (!deletingContract) return;
+    
+    deleteMutation.mutate({
+      id: deletingContract.id,
+      status: "inativo",
+    });
+  };
+  
+  // Filtrar contratos
+  const filteredContracts = useMemo(() => {
+    if (!contracts) return [];
+    
+    return contracts.filter((contract) => {
+      const matchName = filterName === "" || 
+        contract.name.toLowerCase().includes(filterName.toLowerCase());
+      
+      const matchStatus = filterStatus === "todos" || 
+        contract.status === filterStatus;
+      
+      return matchName && matchStatus;
+    });
+  }, [contracts, filterName, filterStatus]);
 
   const getStatusBadge = (status: string) => {
     return status === "ativo" ? (
-      <Badge variant="default">Ativo</Badge>
+      <Badge variant="default" className="bg-[#3ab54a]">Ativo</Badge>
     ) : (
       <Badge variant="destructive">Inativo</Badge>
     );
@@ -75,7 +188,7 @@ export default function Contratos() {
             <h1 className="text-3xl font-bold tracking-tight">Contratos</h1>
             <p className="text-muted-foreground">Gerencie os contratos do sistema</p>
           </div>
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog open={openCreate} onOpenChange={setOpenCreate}>
             <DialogTrigger asChild>
               <Button>
                 <Plus className="mr-2 h-4 w-4" />
@@ -89,7 +202,7 @@ export default function Contratos() {
                   Preencha os dados do contrato
                 </DialogDescription>
               </DialogHeader>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleCreate} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome do Contrato *</Label>
                   <Input
@@ -139,7 +252,7 @@ export default function Contratos() {
                 </div>
                 
                 <div className="flex justify-end gap-2">
-                  <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+                  <Button type="button" variant="outline" onClick={() => setOpenCreate(false)}>
                     Cancelar
                   </Button>
                   <Button type="submit" disabled={createMutation.isPending}>
@@ -150,12 +263,51 @@ export default function Contratos() {
             </DialogContent>
           </Dialog>
         </div>
+        
+        {/* Filtros */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Filtros</CardTitle>
+            <CardDescription>Busque contratos por nome ou status</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="filterName">Nome do Contrato</Label>
+                <div className="relative">
+                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    id="filterName"
+                    placeholder="Buscar por nome..."
+                    value={filterName}
+                    onChange={(e) => setFilterName(e.target.value)}
+                    className="pl-8"
+                  />
+                </div>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="filterStatus">Status</Label>
+                <Select value={filterStatus} onValueChange={(value) => setFilterStatus(value as "todos" | "ativo" | "inativo")}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="todos">Todos</SelectItem>
+                    <SelectItem value="ativo">Ativo</SelectItem>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
 
         {/* Tabela */}
         <Card>
           <CardHeader>
-            <CardTitle>{contracts?.length || 0} contrato(s) cadastrado(s)</CardTitle>
-            <CardDescription>Lista completa de contratos no sistema</CardDescription>
+            <CardTitle>{filteredContracts?.length || 0} contrato(s) encontrado(s)</CardTitle>
+            <CardDescription>Lista de contratos no sistema</CardDescription>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -164,7 +316,7 @@ export default function Contratos() {
                   <Skeleton key={i} className="h-12 w-full" />
                 ))}
               </div>
-            ) : contracts && contracts.length > 0 ? (
+            ) : filteredContracts && filteredContracts.length > 0 ? (
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -180,7 +332,7 @@ export default function Contratos() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {contracts.map((contract) => (
+                  {filteredContracts.map((contract) => (
                     <TableRow key={contract.id}>
                       <TableCell className="font-medium">{contract.id}</TableCell>
                       <TableCell>{contract.name}</TableCell>
@@ -194,18 +346,33 @@ export default function Contratos() {
                       </TableCell>
                       <TableCell>
                         {contract.isSpecial ? (
-                          <Badge variant="secondary">Sim</Badge>
+                          <Badge variant="secondary" className="bg-[#00b7ff] text-white">Sim</Badge>
                         ) : (
-                          <span className="text-muted-foreground">Não</span>
+                          <Badge variant="outline">Não</Badge>
                         )}
                       </TableCell>
                       <TableCell>
                         {new Date(contract.createdAt).toLocaleDateString("pt-BR")}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="ghost" size="sm" disabled={contract.isSpecial}>
-                          <Pencil className="h-4 w-4" />
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            disabled={contract.isSpecial}
+                            onClick={() => handleEdit(contract as Contract)}
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </Button>
+                          <Button 
+                            variant="ghost" 
+                            size="sm" 
+                            disabled={contract.isSpecial}
+                            onClick={() => handleDelete(contract as Contract)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -213,12 +380,118 @@ export default function Contratos() {
               </Table>
             ) : (
               <p className="text-center text-sm text-muted-foreground py-12">
-                Nenhum contrato cadastrado
+                Nenhum contrato encontrado
               </p>
             )}
           </CardContent>
         </Card>
       </div>
+      
+      {/* Modal de Edição */}
+      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar Contrato</DialogTitle>
+            <DialogDescription>
+              Atualize os dados do contrato
+            </DialogDescription>
+          </DialogHeader>
+          <form onSubmit={handleUpdate} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="editName">Nome do Contrato *</Label>
+              <Input
+                id="editName"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                placeholder="Digite o nome do contrato"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editCity">Cidade *</Label>
+              <Input
+                id="editCity"
+                value={editCity}
+                onChange={(e) => setEditCity(e.target.value)}
+                placeholder="Digite o nome da cidade"
+                required
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editState">UF *</Label>
+              <Select value={editState} onValueChange={setEditState} required>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ESTADOS_BRASIL.map((estado) => (
+                    <SelectItem key={estado.sigla} value={estado.sigla}>
+                      {estado.sigla} - {estado.nome}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="editValidityDate">Data de Validade</Label>
+              <Input
+                id="editValidityDate"
+                type="date"
+                value={editValidityDate}
+                onChange={(e) => setEditValidityDate(e.target.value)}
+              />
+            </div>
+            
+            <div className="flex items-center justify-between space-x-2 rounded-lg border p-4">
+              <div className="space-y-0.5">
+                <Label htmlFor="editStatus">Status do Contrato</Label>
+                <p className="text-sm text-muted-foreground">
+                  {editStatus === "ativo" ? "Contrato ativo no sistema" : "Contrato inativo"}
+                </p>
+              </div>
+              <Switch
+                id="editStatus"
+                checked={editStatus === "ativo"}
+                onCheckedChange={(checked) => setEditStatus(checked ? "ativo" : "inativo")}
+              />
+            </div>
+            
+            <div className="flex justify-end gap-2">
+              <Button type="button" variant="outline" onClick={() => setOpenEdit(false)}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={updateMutation.isPending}>
+                {updateMutation.isPending ? "Salvando..." : "Salvar Alterações"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar Exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir o contrato <strong>{deletingContract?.name}</strong>?
+              Esta ação irá inativar o contrato no sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              {deleteMutation.isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Layout>
   );
 }

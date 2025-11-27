@@ -166,3 +166,12 @@
 - [x] Aplicar normalização nas APIs de departamentos
 - [x] Aplicar normalização na API de usuários/profiles
 - [x] Testar normalização em todos os cadastros
+
+## Melhorias na Página de Contratos
+- [x] Implementar modal de edição de contratos
+- [x] Adicionar toggle Ativar/Desativar no modal de edição
+- [x] Implementar ação de exclusão de contratos com confirmação
+- [x] Adicionar filtro por nome do contrato
+- [x] Adicionar filtro por status (ativo/inativo)
+- [x] Padronizar coluna Especial (Não com mesmo estilo do Sim)
+- [x] Testar todas as funcionalidades
