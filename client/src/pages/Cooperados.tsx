@@ -22,7 +22,7 @@ import { toast } from "sonner";
 import * as XLSX from 'xlsx';
 import { ESTADOS_BRASIL } from "../../../shared/brasil";
 import { BANCOS_BRASIL } from "../../../shared/bancos";
-import InputMask from 'react-input-mask';
+import { IMaskInput } from 'react-imask';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Cooperado = {
@@ -565,23 +565,17 @@ export default function Cooperados() {
                                 <Label htmlFor="document" className="text-red-600 mb-2 block font-medium">
                                   CPF *
                                 </Label>
-                                <InputMask
-                                  mask="999.999.999-99"
+                                <IMaskInput
+                                  mask="000.000.000-00"
+                                  definitions={{
+                                    '0': /[0-9]/
+                                  }}
                                   value={document}
-                                  onChange={(e) => setDocument(e.target.value)}
+                                  onAccept={(value: string) => setDocument(value)}
                                   onBlur={() => handleBlur('document')}
-                                >
-                                  {/* @ts-ignore */}
-                                  {(inputProps: any) => (
-                                    <Input
-                                      {...inputProps}
-                                      id="document"
-                                      placeholder="000.000.000-00"
-                                      required
-                                      className={touched.document && document.replace(/\D/g, '').length !== 11 ? "border-red-500" : ""}
-                                    />
-                                  )}
-                                </InputMask>
+                                  placeholder="000.000.000-00"
+                                  className={`flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm ${touched.document && document.replace(/\D/g, '').length !== 11 ? "border-red-500" : ""}`}
+                                />
                                 {touched.document && document.replace(/\D/g, '').length > 0 && document.replace(/\D/g, '').length !== 11 && (
                                   <p className="text-xs text-red-600 mt-1">CPF deve ter 11 dígitos</p>
                                 )}
@@ -697,21 +691,16 @@ export default function Cooperados() {
                               placeholder="+55"
                               className="w-20"
                             />
-                            <InputMask
-                              mask="(99) 99999-9999"
+                            <IMaskInput
+                              mask="(00) 00000-0000"
+                              definitions={{
+                                '0': /[0-9]/
+                              }}
                               value={whatsappNumber}
-                              onChange={(e) => setWhatsappNumber(e.target.value)}
-                            >
-                              {/* @ts-ignore */}
-                              {(inputProps: any) => (
-                                <Input
-                                  {...inputProps}
-                                  id="whatsappNumber"
-                                  placeholder="(00) 00000-0000"
-                                  className="flex-1"
-                                />
-                              )}
-                            </InputMask>
+                              onAccept={(value: string) => setWhatsappNumber(value)}
+                              placeholder="(00) 00000-0000"
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm flex-1"
+                            />
                           </div>
                         </div>
                         <div>
@@ -723,21 +712,16 @@ export default function Cooperados() {
                               placeholder="+55"
                               className="w-20"
                             />
-                            <InputMask
-                              mask="(99) 9999-9999"
+                            <IMaskInput
+                              mask="(00) 0000-0000"
+                              definitions={{
+                                '0': /[0-9]/
+                              }}
                               value={secondaryPhone}
-                              onChange={(e) => setSecondaryPhone(e.target.value)}
-                            >
-                              {/* @ts-ignore */}
-                              {(inputProps: any) => (
-                                <Input
-                                  {...inputProps}
-                                  id="secondaryPhone"
-                                  placeholder="(00) 0000-0000"
-                                  className="flex-1"
-                                />
-                              )}
-                            </InputMask>
+                              onAccept={(value: string) => setSecondaryPhone(value)}
+                              placeholder="(00) 0000-0000"
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm flex-1"
+                            />
                           </div>
                         </div>
                       </div>
@@ -754,20 +738,16 @@ export default function Cooperados() {
                         <div>
                           <Label htmlFor="zipCode" className="mb-2 block font-medium">CEP</Label>
                           <div className="relative">
-                            <InputMask
-                              mask="99999-999"
+                            <IMaskInput
+                              mask="00000-000"
+                              definitions={{
+                                '0': /[0-9]/
+                              }}
                               value={zipCode}
-                              onChange={(e) => handleCepChange(e.target.value)}
-                            >
-                              {/* @ts-ignore */}
-                              {(inputProps: any) => (
-                                <Input
-                                  {...inputProps}
-                                  id="zipCode"
-                                  placeholder="00000-000"
-                                />
-                              )}
-                            </InputMask>
+                              onAccept={(value: string) => handleCepChange(value)}
+                              placeholder="00000-000"
+                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm"
+                            />
                             {loadingCep && (
                               <Loader2 className="absolute right-3 top-2.5 h-5 w-5 animate-spin text-blue-600" />
                             )}

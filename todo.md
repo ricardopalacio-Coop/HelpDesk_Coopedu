@@ -258,3 +258,9 @@
 - [x] Implementar loading spinner durante busca de CEP
 - [x] Adicionar validação de CPF com 11 dígitos
 - [x] Melhorar largura do modal para 6xl (max-w-6xl)
+
+## Correção de Compatibilidade React 19
+- [x] Remover react-input-mask (incompatível com React 19)
+- [x] Implementar máscaras nativas usando IMask ou input-mask-core
+- [x] Testar todas as máscaras (CPF, telefone, CEP)
+- [x] Validar funcionamento completo do formulário
