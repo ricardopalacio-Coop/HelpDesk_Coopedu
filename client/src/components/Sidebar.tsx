@@ -42,6 +42,7 @@ const navigation = [
     href: "/tickets",
     icon: Ticket,
     roles: ["admin", "gerente", "atendente"],
+    inDevelopment: true,
   },
   {
     name: "WhatsApp",
@@ -72,6 +73,7 @@ const navigation = [
     href: "/relatorios",
     icon: BarChart3,
     roles: ["admin", "gerente"],
+    inDevelopment: true,
   },
   {
     name: "Configurações",
@@ -231,7 +233,14 @@ export default function Sidebar() {
                       title={collapsed ? item.name : undefined}
                     >
                       <item.icon className="h-5 w-5 flex-shrink-0" />
-                      {!collapsed && <span className="whitespace-nowrap">{item.name}</span>}
+                      {!collapsed && (
+                        <>
+                          <span className="whitespace-nowrap">{item.name}</span>
+                          {item.inDevelopment && (
+                            <span className="ml-auto text-[10px] bg-yellow-500/20 text-yellow-300 px-1.5 py-0.5 rounded font-semibold">DEV</span>
+                          )}
+                        </>
+                      )}
                     </div>
                   </Link>
                 )}

@@ -358,3 +358,11 @@ OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
 - [x] Adicionar indentação visual e borda lateral no submenu
 - [x] Corrigir HREFs para usar prefixo /settings/
 - [x] Testar navegação de todas as páginas do submenu
+
+## Marcar Menus como Desenvolvimento
+- [x] Adicionar badge "DEV" no menu Relatórios
+- [x] Adicionar badge "DEV" no menu Tickets
+- [x] Criar página placeholder para Relatórios
+- [x] Criar página placeholder para Tickets
+- [x] Atualizar rotas no App.tsx
+- [x] Testar navegação dos menus marcados como DEV

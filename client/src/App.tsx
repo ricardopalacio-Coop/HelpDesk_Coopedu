@@ -6,11 +6,12 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import WhatsAppChat from "./pages/WhatsAppChat";
-import Tickets from "./pages/Tickets";
+import TicketsPlaceholder from "./pages/TicketsPlaceholder";
 import Cooperados from "./pages/Cooperados";
 import Contratos from "./pages/Contratos";
 import WhatsApp from "./pages/WhatsApp";
 import Configuracoes from "./pages/Configuracoes";
+import RelatoriosPlaceholder from "./pages/RelatoriosPlaceholder";
 import Departamentos from "./pages/Departamentos";
 import Usuarios from "./pages/settings/Usuarios";
 import PerfilUsuario from "./pages/settings/PerfilUsuario";
@@ -26,6 +27,8 @@ function Router() {
     <Switch>
       <Route path={"/"} component={Home} />
       <Route path={"/whatsapp-chat"} component={WhatsAppChat} />
+      <Route path="/tickets" component={TicketsPlaceholder} />
+      <Route path="/relatorios" component={RelatoriosPlaceholder} />
       <Route path={"/404"} component={NotFound} />
       <Route path="/cooperados" component={Cooperados} />
       <Route path="/contratos" component={Contratos} />
