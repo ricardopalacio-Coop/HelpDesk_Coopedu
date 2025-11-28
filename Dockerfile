@@ -7,8 +7,10 @@ WORKDIR /app
 # Instalar pnpm
 RUN npm install -g pnpm
 
-# 2. Copiar arquivos de dependências
+# 2. Copiar arquivos de dependências E A PASTA PATCHES
+# (Aqui estava o erro: precisávamos copiar a pasta patches antes de instalar)
 COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
 
 # Instalar dependências
 RUN pnpm install
