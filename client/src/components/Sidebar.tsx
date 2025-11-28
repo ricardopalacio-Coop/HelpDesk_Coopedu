@@ -13,6 +13,15 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
+  ChevronDown,
+  ChevronUp,
+  User,
+  UserCog,
+  Briefcase,
+  MessageCircle,
+  List,
+  Upload,
+  Plug,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -66,9 +75,50 @@ const navigation = [
   },
   {
     name: "Configurações",
-    href: "/configuracoes",
     icon: Settings,
     roles: ["admin"],
+    submenu: [
+      {
+        name: "Usuários",
+        href: "/settings/usuarios",
+        icon: User,
+        inDevelopment: true,
+      },
+      {
+        name: "Perfil do Usuário",
+        href: "/settings/perfil-usuario",
+        icon: UserCog,
+        inDevelopment: true,
+      },
+      {
+        name: "Empresa",
+        href: "/settings/empresa",
+        icon: Briefcase,
+        inDevelopment: true,
+      },
+      {
+        name: "Mensagens Automáticas",
+        href: "/settings/mensagens-automaticas",
+        icon: MessageCircle,
+      },
+      {
+        name: "Tipos de Atendimentos",
+        href: "/settings/tipos-atendimentos",
+        icon: List,
+        inDevelopment: true,
+      },
+      {
+        name: "Importações",
+        href: "/settings/importacoes",
+        icon: Upload,
+      },
+      {
+        name: "APIs",
+        href: "/settings/apis",
+        icon: Plug,
+        inDevelopment: true,
+      },
+    ],
   },
 ];
 
@@ -76,6 +126,7 @@ export default function Sidebar() {
   const [location] = useLocation();
   const { user } = useAuth();
   const [collapsed, setCollapsed] = React.useState(false);
+  const [expandedMenu, setExpandedMenu] = React.useState<string | null>(null);
   const logoutMutation = trpc.auth.logout.useMutation();
 
   const handleLogout = async () => {
@@ -135,23 +186,89 @@ export default function Sidebar() {
       <ScrollArea className="flex-1 px-3 py-4">
         <nav className="space-y-1">
           {filteredNavigation.map((item) => {
-            const isActive = location === item.href;
+            const hasSubmenu = item.submenu && item.submenu.length > 0;
+            const isExpanded = expandedMenu === item.name;
+            const isActive = item.href ? location === item.href : false;
+            const isSubmenuActive = hasSubmenu && item.submenu.some(sub => location === sub.href);
+
             return (
-              <Link key={item.name} href={item.href}>
-                <div
-                  className={cn(
-                    "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer",
-                    isActive
-                      ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
-                      : "text-white/70 hover:bg-white/10 hover:text-white",
-                    collapsed && "justify-center"
-                  )}
-                  title={collapsed ? item.name : undefined}
-                >
-                  <item.icon className="h-5 w-5 flex-shrink-0" />
-                  {!collapsed && <span className="whitespace-nowrap">{item.name}</span>}
-                </div>
-              </Link>
+              <div key={item.name}>
+                {/* Item principal */}
+                {hasSubmenu ? (
+                  <div
+                    className={cn(
+                      "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer",
+                      isSubmenuActive || isExpanded
+                        ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                        : "text-white/70 hover:bg-white/10 hover:text-white",
+                      collapsed && "justify-center"
+                    )}
+                    onClick={() => setExpandedMenu(isExpanded ? null : item.name)}
+                    title={collapsed ? item.name : undefined}
+                  >
+                    <item.icon className="h-5 w-5 flex-shrink-0" />
+                    {!collapsed && (
+                      <>
+                        <span className="flex-1 whitespace-nowrap">{item.name}</span>
+                        {isExpanded ? (
+                          <ChevronUp className="h-4 w-4" />
+                        ) : (
+                          <ChevronDown className="h-4 w-4" />
+                        )}
+                      </>
+                    )}
+                  </div>
+                ) : (
+                  <Link href={item.href!}>
+                    <div
+                      className={cn(
+                        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-200 cursor-pointer",
+                        isActive
+                          ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                          : "text-white/70 hover:bg-white/10 hover:text-white",
+                        collapsed && "justify-center"
+                      )}
+                      title={collapsed ? item.name : undefined}
+                    >
+                      <item.icon className="h-5 w-5 flex-shrink-0" />
+                      {!collapsed && <span className="whitespace-nowrap">{item.name}</span>}
+                    </div>
+                  </Link>
+                )}
+
+                {/* Submenu */}
+                {hasSubmenu && isExpanded && !collapsed && (
+                  <div className="ml-4 mt-1 space-y-1 border-l-2 border-white/20 pl-3">
+                    {item.submenu.map((subItem) => {
+                      const isSubActive = location === subItem.href;
+                      return (
+                        <Link key={subItem.name} href={subItem.href}>
+                          <div
+                            className={cn(
+                              "flex items-center gap-2 rounded-lg px-3 py-2 text-xs font-medium transition-all duration-200 cursor-pointer",
+                              isSubActive
+                                ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                                : "text-white/60 hover:bg-white/10 hover:text-white"
+                            )}
+                            onClick={(e) => {
+                              if (subItem.inDevelopment) {
+                                e.preventDefault();
+                                toast.info("Em Desenvolvimento");
+                              }
+                            }}
+                          >
+                            <subItem.icon className="h-4 w-4 flex-shrink-0" />
+                            <span className="whitespace-nowrap">{subItem.name}</span>
+                            {subItem.inDevelopment && (
+                              <span className="ml-auto text-[10px] bg-yellow-500/20 text-yellow-300 px-1.5 py-0.5 rounded">DEV</span>
+                            )}
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
             );
           })}
         </nav>

@@ -333,3 +333,28 @@ OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
 - [x] Testar fluxo de cadastro (modo create) - funcionando perfeitamente
 - [x] Testar fluxo de edição (modo edit) - funcionando perfeitamente
 - [x] Validar que todos os campos são preenchidos corretamente
+
+## Submenu de Configurações
+- [ ] Criar estrutura de submenu em Configurações
+- [ ] Adicionar item "Usuários" (Em Desenvolvimento)
+- [ ] Adicionar item "Perfil do Usuário" (Em Desenvolvimento)
+- [ ] Adicionar item "Empresa" (Em Desenvolvimento)
+- [ ] Mover "Mensagens Automáticas" de Configurações para submenu
+- [ ] Adicionar item "Tipos de Atendimentos" (Em Desenvolvimento)
+- [ ] Mover "Importações" de Configurações para submenu
+- [ ] Adicionar item "APIs" (Em Desenvolvimento)
+- [ ] Testar navegação e funcionalidades
+
+## Submenu de Configurações
+- [x] Criar submenu expansível em Configurações com 7 itens
+- [x] Extrair componente de Mensagens Automáticas para /settings/mensagens-automaticas
+- [x] Extrair componente de Importações para /settings/importacoes
+- [x] Criar página placeholder Usuários (/settings/usuarios) com badge DEV
+- [x] Criar página placeholder Perfil do Usuário (/settings/perfil-usuario) com badge DEV
+- [x] Criar página placeholder Empresa (/settings/empresa) com badge DEV
+- [x] Criar página placeholder Tipos de Atendimentos (/settings/tipos-atendimentos) com badge DEV
+- [x] Criar página placeholder APIs (/settings/apis) com badge DEV
+- [x] Implementar chevron animado para indicar estado expandido/colapsado
+- [x] Adicionar indentação visual e borda lateral no submenu
+- [x] Corrigir HREFs para usar prefixo /settings/
+- [x] Testar navegação de todas as páginas do submenu

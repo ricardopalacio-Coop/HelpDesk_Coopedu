@@ -12,6 +12,13 @@ import Contratos from "./pages/Contratos";
 import WhatsApp from "./pages/WhatsApp";
 import Configuracoes from "./pages/Configuracoes";
 import Departamentos from "./pages/Departamentos";
+import Usuarios from "./pages/settings/Usuarios";
+import PerfilUsuario from "./pages/settings/PerfilUsuario";
+import Empresa from "./pages/settings/Empresa";
+import MensagensAutomaticas from "./pages/settings/MensagensAutomaticas";
+import TiposAtendimentos from "./pages/settings/TiposAtendimentos";
+import Importacoes from "./pages/settings/Importacoes";
+import APIs from "./pages/settings/APIs";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -25,6 +32,13 @@ function Router() {
       <Route path="/whatsapp" component={WhatsApp} />
       <Route path="/configuracoes" component={Configuracoes} />
       <Route path="/departamentos" component={Departamentos} />
+      <Route path="/settings/usuarios" component={Usuarios} />
+      <Route path="/settings/perfil-usuario" component={PerfilUsuario} />
+      <Route path="/settings/empresa" component={Empresa} />
+      <Route path="/settings/mensagens-automaticas" component={MensagensAutomaticas} />
+      <Route path="/settings/tipos-atendimentos" component={TiposAtendimentos} />
+      <Route path="/settings/importacoes" component={Importacoes} />
+      <Route path="/settings/apis" component={APIs} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />
