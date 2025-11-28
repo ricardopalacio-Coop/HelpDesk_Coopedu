@@ -25,7 +25,7 @@ ENV NODE_ENV=production
 RUN pnpm build
 
 # 6. Expor a porta 3000
-EXPOSE 3000
+EXPOSE 8080
 
 # 7. Comando para iniciar
 CMD ["pnpm", "start"]
