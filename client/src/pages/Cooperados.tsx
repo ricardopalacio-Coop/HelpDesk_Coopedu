@@ -61,9 +61,12 @@ const formatCPF = (cpf: string) => {
 export default function Cooperados() {
   const { data: cooperados, isLoading } = trpc.cooperados.list.useQuery(undefined) as { data: Cooperado[] | undefined, isLoading: boolean };
   const { data: contracts } = trpc.contracts.list.useQuery();
+  const utils = trpc.useUtils();
   
-  // Estados para modal de criação
+  // Estados para modal de criação/edição unificado
   const [openCreate, setOpenCreate] = useState(false);
+  const [mode, setMode] = useState<'create' | 'edit'>('create');
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [registrationNumber, setRegistrationNumber] = useState("");
   const [name, setName] = useState("");
   const [document, setDocument] = useState("");
@@ -148,9 +151,6 @@ export default function Cooperados() {
     setTouched(prev => ({ ...prev, [field]: true }));
   };
   
-  // Estados para modal de edição
-  const [openEdit, setOpenEdit] = useState(false);
-  
   // Estados para modal de dados bancários
   const [openBankData, setOpenBankData] = useState(false);
   const [selectedCooperadoId, setSelectedCooperadoId] = useState<number | null>(null);
@@ -160,29 +160,6 @@ export default function Cooperados() {
     { cooperadoId: selectedCooperadoId! },
     { enabled: selectedCooperadoId !== null }
   );
-  const [editingCooperado, setEditingCooperado] = useState<Cooperado | null>(null);
-  const [editRegistrationNumber, setEditRegistrationNumber] = useState("");
-  const [editName, setEditName] = useState("");
-  const [editDocument, setEditDocument] = useState("");
-  const [editBirthDate, setEditBirthDate] = useState("");
-  const [editTerminationDate, setEditTerminationDate] = useState("");
-  const [editPosition, setEditPosition] = useState("");
-  const [editStatus, setEditStatus] = useState<"ativo" | "inativo" | "desligado">("ativo");
-  const [editContractId, setEditContractId] = useState("");
-  const [editEmail, setEditEmail] = useState("");
-  
-  // Telefones (edição)
-  const [editWhatsappNumber, setEditWhatsappNumber] = useState("");
-  const [editSecondaryPhone, setEditSecondaryPhone] = useState("");
-  
-  // Endereço (edição)
-  const [editStreet, setEditStreet] = useState("");
-  const [editAddressNumber, setEditAddressNumber] = useState("");
-  const [editNeighborhood, setEditNeighborhood] = useState("");
-  const [editComplement, setEditComplement] = useState("");
-  const [editCity, setEditCity] = useState("");
-  const [editState, setEditState] = useState("");
-  const [editZipCode, setEditZipCode] = useState("");
   
   // Estados para exclusão
   const [openDelete, setOpenDelete] = useState(false);
@@ -196,8 +173,6 @@ export default function Cooperados() {
   // Estados para ordenação
   const [sortColumn, setSortColumn] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  
-  const utils = trpc.useUtils();
   
   const createMutation = trpc.cooperados.create.useMutation({
     onSuccess: () => {
@@ -215,7 +190,10 @@ export default function Cooperados() {
     onSuccess: () => {
       toast.success("Cooperado atualizado com sucesso!");
       utils.cooperados.list.invalidate();
-      setOpenEdit(false);
+      setOpenCreate(false);
+      resetForm();
+      setMode('create');
+      setEditingId(null);
     },
     onError: (error) => {
       toast.error(`Erro ao atualizar cooperado: ${error.message}`);
@@ -267,7 +245,7 @@ export default function Cooperados() {
   const handleCreate = (e: React.FormEvent) => {
     e.preventDefault();
     
-    createMutation.mutate({
+    const cooperadoData = {
       registrationNumber: parseInt(registrationNumber),
       name,
       document: document.replace(/\D/g, ''),
@@ -294,15 +272,19 @@ export default function Cooperados() {
       accountNumber: accountNumber || undefined,
       accountDigit: accountDigit || undefined,
       pixKey: pixKey || undefined,
-    });
+    };
+    
+    if (mode === 'create') {
+      createMutation.mutate(cooperadoData);
+    } else if (mode === 'edit' && editingId) {
+      updateMutation.mutate({
+        id: editingId,
+        ...cooperadoData,
+      });
+    }
   };
   
-  const handleEdit = (cooperado: Cooperado) => {
-    setEditingCooperado(cooperado);
-    setEditRegistrationNumber(cooperado.registrationNumber.toString());
-    setEditName(cooperado.name);
-    setEditDocument(cooperado.document);
-    
+  const handleEdit = async (cooperado: Cooperado) => {
     // Tratamento robusto de datas
     const formatDateForInput = (date: string | Date | null) => {
       if (!date) return "";
@@ -316,49 +298,65 @@ export default function Cooperados() {
       return dateStr;
     };
     
-    setEditBirthDate(formatDateForInput(cooperado.birthDate));
-    setEditTerminationDate(formatDateForInput(cooperado.terminationDate));
-    setEditPosition(cooperado.position || "");
-    setEditStatus(cooperado.status as "ativo" | "inativo" | "desligado");
-    setEditContractId(cooperado.contractId ? cooperado.contractId.toString() : "sem_contrato");
-    setEditEmail(cooperado.email || "");
-    setEditWhatsappNumber(cooperado.whatsappNumber || "");
-    setEditSecondaryPhone(cooperado.secondaryPhone || "");
-    setEditStreet(cooperado.street || "");
-    setEditAddressNumber(cooperado.addressNumber || "");
-    setEditNeighborhood(cooperado.neighborhood || "");
-    setEditComplement(cooperado.complement || "");
-    setEditCity(cooperado.city || "");
-    setEditState(cooperado.state || "");
-    setEditZipCode(cooperado.zipCode || "");
-    setOpenEdit(true);
+    // Preencher todos os campos do modal unificado
+    setMode('edit');
+    setEditingId(cooperado.id);
+    setRegistrationNumber(cooperado.registrationNumber.toString());
+    setName(cooperado.name);
+    setDocument(cooperado.document);
+    setBirthDate(formatDateForInput(cooperado.birthDate));
+    setAssociationDate(formatDateForInput(cooperado.associationDate));
+    setPosition(cooperado.position || "");
+    setStatus(cooperado.status as "ativo" | "inativo" | "desligado");
+    setContractId(cooperado.contractId ? cooperado.contractId.toString() : "sem_contrato");
+    setEmail(cooperado.email || "");
+    
+    // Telefones (extrair código do país se existir)
+    const extractPhone = (fullNumber: string | null) => {
+      if (!fullNumber) return { code: "+55", number: "" };
+      const match = fullNumber.match(/^(\+\d{1,3})(.*)$/);
+      if (match) {
+        return { code: match[1], number: match[2].trim() };
+      }
+      return { code: "+55", number: fullNumber };
+    };
+    
+    const whatsapp = extractPhone(cooperado.whatsappNumber);
+    setWhatsappCountryCode(whatsapp.code);
+    setWhatsappNumber(whatsapp.number);
+    
+    const secondary = extractPhone(cooperado.secondaryPhone);
+    setSecondaryCountryCode(secondary.code);
+    setSecondaryPhone(secondary.number);
+    
+    // Endereço
+    setStreet(cooperado.street || "");
+    setAddressNumber(cooperado.addressNumber || "");
+    setNeighborhood(cooperado.neighborhood || "");
+    setComplement(cooperado.complement || "");
+    setCity(cooperado.city || "");
+    setState(cooperado.state || "");
+    setZipCode(cooperado.zipCode || "");
+    
+    // Buscar dados bancários
+    try {
+      const bankData = await utils.cooperados.bankData.get.fetch({ cooperadoId: cooperado.id });
+      if (bankData) {
+        setBankCode(bankData.bankCode || "");
+        setBankName(bankData.bankName || "");
+        setAccountType(bankData.accountType as "salario" | "corrente" | "poupanca" || "corrente");
+        setAgency(bankData.agency || "");
+        setAccountNumber(bankData.accountNumber || "");
+        setAccountDigit(bankData.accountDigit || "");
+        setPixKey(bankData.pixKey || "");
+      }
+    } catch (error) {
+      console.error("Erro ao buscar dados bancários:", error);
+    }
+    
+    setOpenCreate(true);
   };
   
-  const handleUpdate = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!editingCooperado) return;
-    
-    updateMutation.mutate({
-      id: editingCooperado.id,
-      name: editName,
-      document: editDocument,
-      birthDate: editBirthDate || undefined,
-      terminationDate: editTerminationDate || undefined,
-      position: editPosition || undefined,
-      status: editStatus,
-      contractId: editContractId === "sem_contrato" ? undefined : parseInt(editContractId),
-      email: editEmail || undefined,
-      whatsappNumber: editWhatsappNumber || undefined,
-      secondaryPhone: editSecondaryPhone || undefined,
-      street: editStreet || undefined,
-      addressNumber: editAddressNumber || undefined,
-      neighborhood: editNeighborhood || undefined,
-      complement: editComplement || undefined,
-      city: editCity || undefined,
-      state: editState || undefined,
-      zipCode: editZipCode || undefined,
-    });
-  };
   
   const handleDelete = (cooperado: Cooperado) => {
     setDeletingCooperado(cooperado);
@@ -491,16 +489,23 @@ export default function Cooperados() {
               </Button>
               <Dialog open={openCreate} onOpenChange={setOpenCreate}>
                 <DialogTrigger asChild>
-                  <Button>
+                  <Button size="sm" className="gap-2" onClick={() => {
+                    setMode('create');
+                    setEditingId(null);
+                    resetForm();
+                  }}>
                     <Plus className="h-4 w-4 mr-2" />
                     Novo Cooperado
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="w-[95vw] max-w-[1600px] max-h-[90vh] overflow-y-auto p-8">
                   <DialogHeader>
-                    <DialogTitle className="text-2xl">Novo Cooperado</DialogTitle>
+                    <DialogTitle className="text-2xl">{mode === 'create' ? 'Novo Cooperado' : 'Editar Cooperado'}</DialogTitle>
                     <DialogDescription>
-                      Preencha os dados do novo cooperado. Campos marcados com <span className="text-red-600">*</span> são obrigatórios.
+                      {mode === 'create' 
+                        ? 'Preencha os dados do novo cooperado. Campos marcados com '
+                        : 'Atualize os dados do cooperado. Campos marcados com '
+                      }<span className="text-red-600">*</span> são obrigatórios.
                     </DialogDescription>
                   </DialogHeader>
                   <form onSubmit={handleCreate} className="space-y-8">
@@ -925,20 +930,16 @@ export default function Cooperados() {
                       }}>
                         Cancelar
                       </Button>
-                      <Button 
-                        type="submit" 
-                        disabled={createMutation.isPending || !isFormValid()}
-                        className="min-w-[150px]"
-                      >
-                        {createMutation.isPending ? (
+                      <Button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="w-full sm:w-auto">
+                        {(createMutation.isPending || updateMutation.isPending) ? (
                           <>
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                            Criando...
+                            {mode === 'create' ? 'Criando...' : 'Atualizando...'}
                           </>
                         ) : (
                           <>
                             <CheckCircle2 className="h-4 w-4 mr-2" />
-                            Criar Cooperado
+                            {mode === 'create' ? 'Criar Cooperado' : 'Atualizar Cooperado'}
                           </>
                         )}
                       </Button>
@@ -1168,212 +1169,6 @@ export default function Cooperados() {
         </CardContent>
       </Card>
       
-      {/* Dialog de Edição */}
-      <Dialog open={openEdit} onOpenChange={setOpenEdit}>
-        <DialogContent className="w-[95vw] max-w-[1600px] max-h-[90vh] overflow-y-auto p-8">
-          <DialogHeader>
-            <DialogTitle>Editar Cooperado</DialogTitle>
-            <DialogDescription>Atualize os dados do cooperado</DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleUpdate} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editRegistrationNumber">Matrícula</Label>
-                <Input
-                  id="editRegistrationNumber"
-                  type="number"
-                  value={editRegistrationNumber}
-                  onChange={(e) => setEditRegistrationNumber(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <Label htmlFor="editDocument">CPF</Label>
-                <Input
-                  id="editDocument"
-                  value={editDocument}
-                  onChange={(e) => setEditDocument(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <div>
-              <Label htmlFor="editName">Nome Completo</Label>
-              <Input
-                id="editName"
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="editBirthDate">Data de Nascimento</Label>
-                <Input
-                  id="editBirthDate"
-                  type="date"
-                  value={editBirthDate}
-                  onChange={(e) => setEditBirthDate(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editTerminationDate">Data de Desligamento</Label>
-                <Input
-                  id="editTerminationDate"
-                  type="date"
-                  value={editTerminationDate}
-                  onChange={(e) => setEditTerminationDate(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editPosition">Cargo</Label>
-                <Input
-                  id="editPosition"
-                  value={editPosition}
-                  onChange={(e) => setEditPosition(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editStatus">Status</Label>
-                <Select value={editStatus} onValueChange={(v) => setEditStatus(v as "ativo" | "inativo" | "desligado")}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="ativo">Ativo</SelectItem>
-                    <SelectItem value="inativo">Inativo</SelectItem>
-                    <SelectItem value="desligado">Desligado</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editContractId">Contrato</Label>
-                <Select value={editContractId} onValueChange={setEditContractId}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="sem_contrato">Sem contrato</SelectItem>
-                    {contracts?.filter(c => c.status === "ativo").map((contract) => (
-                      <SelectItem key={contract.id} value={contract.id.toString()}>
-                        {contract.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="editEmail">Email</Label>
-                <Input
-                  id="editEmail"
-                  type="email"
-                  value={editEmail}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editWhatsappNumber">WhatsApp</Label>
-                <Input
-                  id="editWhatsappNumber"
-                  value={editWhatsappNumber}
-                  onChange={(e) => setEditWhatsappNumber(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editSecondaryPhone">Telefone Secundário</Label>
-                <Input
-                  id="editSecondaryPhone"
-                  value={editSecondaryPhone}
-                  onChange={(e) => setEditSecondaryPhone(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-2">
-                <Label htmlFor="editStreet">Logradouro</Label>
-                <Input
-                  id="editStreet"
-                  value={editStreet}
-                  onChange={(e) => setEditStreet(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editAddressNumber">Número</Label>
-                <Input
-                  id="editAddressNumber"
-                  value={editAddressNumber}
-                  onChange={(e) => setEditAddressNumber(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="editNeighborhood">Bairro</Label>
-                <Input
-                  id="editNeighborhood"
-                  value={editNeighborhood}
-                  onChange={(e) => setEditNeighborhood(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editComplement">Complemento</Label>
-                <Input
-                  id="editComplement"
-                  value={editComplement}
-                  onChange={(e) => setEditComplement(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              <div>
-                <Label htmlFor="editCity">Cidade</Label>
-                <Input
-                  id="editCity"
-                  value={editCity}
-                  onChange={(e) => setEditCity(e.target.value)}
-                />
-              </div>
-              <div>
-                <Label htmlFor="editState">UF</Label>
-                <Select value={editState} onValueChange={setEditState}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ESTADOS_BRASIL.map((uf) => (
-                      <SelectItem key={uf.sigla} value={uf.sigla}>
-                        {uf.sigla} - {uf.nome}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="editZipCode">CEP</Label>
-                <Input
-                  id="editZipCode"
-                  value={editZipCode}
-                  onChange={(e) => setEditZipCode(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end gap-2">
-              <Button type="button" variant="outline" onClick={() => setOpenEdit(false)}>
-                Cancelar
-              </Button>
-              <Button type="submit" disabled={updateMutation.isPending}>
-                {updateMutation.isPending ? "Atualizando..." : "Atualizar Cooperado"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
       
       {/* Dialog de Confirmação de Exclusão */}
       <AlertDialog open={openDelete} onOpenChange={setOpenDelete}>

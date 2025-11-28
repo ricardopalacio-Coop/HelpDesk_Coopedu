@@ -324,3 +324,12 @@ OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
 - [x] Criar modal de cadastro/edição de departamento
 - [x] Adicionar ações (editar, excluir, ativar/desativar)
 - [x] Testar todas as funcionalidades
+
+## Refatoração - Unificar Modal de Cooperados
+- [x] Adicionar estado `mode` ('create' | 'edit') e `editingId` ao modal
+- [x] Modificar handleEdit para abrir modal unificado em modo edição
+- [x] Carregar dados do cooperado no modal quando em modo edição
+- [x] Remover modal de edição duplicado (DialogEdit) - 206 linhas removidas
+- [x] Testar fluxo de cadastro (modo create) - funcionando perfeitamente
+- [x] Testar fluxo de edição (modo edit) - funcionando perfeitamente
+- [x] Validar que todos os campos são preenchidos corretamente
