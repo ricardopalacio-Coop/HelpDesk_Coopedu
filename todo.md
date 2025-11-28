@@ -366,3 +366,9 @@ OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
 - [x] Criar página placeholder para Tickets
 - [x] Atualizar rotas no App.tsx
 - [x] Testar navegação dos menus marcados como DEV
+
+## Corrigir Layout das Páginas de Desenvolvimento
+- [x] Atualizar TicketsPlaceholder para usar DashboardLayout
+- [x] Atualizar RelatoriosPlaceholder para usar DashboardLayout
+- [x] Atualizar todas as páginas settings/* para usar DashboardLayout
+- [x] Testar navegação e layout de todas as páginas placeholder
