@@ -381,8 +381,15 @@ OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
 - [x] Testar integridade do pacote
 
 ## Atualizar GitHub
-- [ ] Verificar configuração Git existente
-- [ ] Adicionar todas as alterações ao staging
-- [ ] Criar commit com descrição das mudanças
-- [ ] Fazer push para o repositório remoto
-- [ ] Verificar se push foi bem-sucedido
+- [x] Verificar configuração Git existente
+- [x] Adicionar todas as alterações ao staging
+- [x] Criar commit com descrição das mudanças
+- [x] Fazer push para o repositório remoto
+- [x] Verificar se push foi bem-sucedido
+
+## Criar README.md
+- [ ] Escrever documentação completa do sistema
+- [ ] Incluir descrição de todas as funcionalidades
+- [ ] Documentar tecnologias utilizadas
+- [ ] Adicionar instruções de instalação e uso
+- [ ] Fazer commit e push para GitHub
