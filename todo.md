@@ -372,3 +372,17 @@ OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
 - [x] Atualizar RelatoriosPlaceholder para usar DashboardLayout
 - [x] Atualizar todas as páginas settings/* para usar DashboardLayout
 - [x] Testar navegação e layout de todas as páginas placeholder
+
+## Atualizar Pacote Localhost
+- [x] Verificar arquivos de configuração local existentes
+- [x] Atualizar scripts de instalação e execução
+- [x] Atualizar README com novas funcionalidades
+- [x] Gerar novo arquivo ZIP com código atualizado
+- [x] Testar integridade do pacote
+
+## Atualizar GitHub
+- [ ] Verificar configuração Git existente
+- [ ] Adicionar todas as alterações ao staging
+- [ ] Criar commit com descrição das mudanças
+- [ ] Fazer push para o repositório remoto
+- [ ] Verificar se push foi bem-sucedido
