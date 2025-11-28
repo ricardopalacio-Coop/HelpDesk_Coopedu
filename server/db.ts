@@ -151,7 +151,19 @@ export async function getAllDepartments() {
   const db = await getDb();
   if (!db) return [];
   
-  return await db.select().from(departments).orderBy(departments.name);
+  return await db
+    .select({
+      id: departments.id,
+      name: departments.name,
+      description: departments.description,
+      responsibleUserId: departments.responsibleUserId,
+      responsibleUserName: users.name,
+      isActive: departments.isActive,
+      createdAt: departments.createdAt,
+    })
+    .from(departments)
+    .leftJoin(users, eq(departments.responsibleUserId, users.id))
+    .orderBy(departments.name);
 }
 
 export async function getDepartmentById(id: number) {
@@ -175,6 +187,26 @@ export async function updateDepartment(id: number, data: Partial<InsertDepartmen
   if (!db) throw new Error("Database not available");
   
   await db.update(departments).set(data).where(eq(departments.id, id));
+}
+
+export async function deleteDepartment(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  await db.delete(departments).where(eq(departments.id, id));
+}
+
+export async function toggleDepartmentStatus(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  
+  const department = await getDepartmentById(id);
+  if (!department) throw new Error("Department not found");
+  
+  await db
+    .update(departments)
+    .set({ isActive: !department.isActive })
+    .where(eq(departments.id, id));
 }
 
 // ============================================================================

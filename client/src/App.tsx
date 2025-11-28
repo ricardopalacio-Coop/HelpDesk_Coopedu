@@ -11,6 +11,7 @@ import Cooperados from "./pages/Cooperados";
 import Contratos from "./pages/Contratos";
 import WhatsApp from "./pages/WhatsApp";
 import Configuracoes from "./pages/Configuracoes";
+import Departamentos from "./pages/Departamentos";
 
 function Router() {
   // make sure to consider if you need authentication for certain routes
@@ -23,6 +24,7 @@ function Router() {
       <Route path="/contratos" component={Contratos} />
       <Route path="/whatsapp" component={WhatsApp} />
       <Route path="/configuracoes" component={Configuracoes} />
+      <Route path="/departamentos" component={Departamentos} />
       <Route path={"/404"} component={NotFound} />
       {/* Final fallback route */}
       <Route component={NotFound} />

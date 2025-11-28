@@ -308,3 +308,19 @@ OBS: Tarefa cancelada pelo usuário para evitar consumo excessivo de créditos
 ## Correção de Dados Bancários
 - [x] Alterar nome do banco código 450 de "FITBANK IP" para "OWLBANK"
 - [x] Validar alteração no modal de dados bancários
+
+## Guia de Instalação Local
+- [x] Criar README_INSTALACAO.md com instruções passo a passo
+- [x] Criar arquivo .env.example com variáveis de ambiente necessárias (VARIAVEIS_AMBIENTE.md)
+- [x] Criar script de setup do banco de dados (setup-database.sql)
+- [x] Gerar arquivo ZIP com projeto completo para download
+
+## Implementação - Tela de Departamentos
+- [x] Criar schema de departamentos no banco (já existia)
+- [x] Criar router tRPC de departamentos (CRUD completo com delete e toggleStatus)
+- [x] Criar funções de banco de dados (db.ts) - deleteDepartment e toggleDepartmentStatus
+- [x] Criar página Departamentos.tsx com listagem completa
+- [x] Implementar filtros e busca (nome, descrição, responsável, status)
+- [x] Criar modal de cadastro/edição de departamento
+- [x] Adicionar ações (editar, excluir, ativar/desativar)
+- [x] Testar todas as funcionalidades

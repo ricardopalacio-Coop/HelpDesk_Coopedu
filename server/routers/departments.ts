@@ -63,6 +63,32 @@ export const departmentsRouter = router({
       await db.updateDepartment(id, normalizedData);
       return { success: true };
     }),
+
+  // Excluir departamento
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      // Apenas administradores podem excluir departamentos
+      if (ctx.user.role !== "admin") {
+        throw new Error("Acesso negado: apenas administradores podem excluir departamentos");
+      }
+      
+      await db.deleteDepartment(input.id);
+      return { success: true };
+    }),
+
+  // Ativar/Desativar departamento
+  toggleStatus: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ input, ctx }) => {
+      // Apenas administradores podem alterar status de departamentos
+      if (ctx.user.role !== "admin") {
+        throw new Error("Acesso negado: apenas administradores podem alterar status de departamentos");
+      }
+      
+      await db.toggleDepartmentStatus(input.id);
+      return { success: true };
+    }),
 });
 
 export const attendanceReasonsRouter = router({
