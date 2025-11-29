@@ -1,72 +1,67 @@
-import { Toaster } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
-import ErrorBoundary from "./components/ErrorBoundary";
-import { ThemeProvider } from "./contexts/ThemeContext";
-import Home from "./pages/Home";
-import WhatsAppChat from "./pages/WhatsAppChat";
-import TicketsPlaceholder from "./pages/TicketsPlaceholder";
-import Cooperados from "./pages/Cooperados";
-import Contratos from "./pages/Contratos";
-import WhatsApp from "./pages/WhatsApp";
-import Configuracoes from "./pages/Configuracoes";
-import RelatoriosPlaceholder from "./pages/RelatoriosPlaceholder";
-import Departamentos from "./pages/Departamentos";
-import Usuarios from "./pages/settings/Usuarios";
-import PerfilUsuario from "./pages/settings/PerfilUsuario";
-import Empresa from "./pages/settings/Empresa";
-import MensagensAutomaticas from "./pages/settings/MensagensAutomaticas";
-import TiposAtendimentos from "./pages/settings/TiposAtendimentos";
-import Importacoes from "./pages/settings/Importacoes";
-import APIs from "./pages/settings/APIs";
+import { Switch, Route, Redirect } from "wouter";
+import { QueryClientProvider } from "@tanstack/react-query";
+import { queryClient } from "./lib/queryClient";
+import { Toaster } from "@/components/ui/toaster";
+import { trpc } from "./lib/trpc";
+import { httpBatchLink } from "@trpc/client";
+import { useState } from "react";
+import { AuthProvider, useAuth } from "@/contexts/AuthContext";
+
+import Home from "@/pages/Home";
+import Login from "@/pages/auth/Login";
+import Register from "@/pages/auth/Register";
+
+// Proteção de Rota: Se não estiver logado, chuta pro Login
+function PrivateRoute({ component: Component }: { component: React.ComponentType }) {
+  const { user, loading } = useAuth();
+
+  if (loading) return <div className="min-h-screen flex items-center justify-center bg-gray-50">Carregando...</div>;
+  if (!user) return <Redirect to="/auth/login" />;
+
+  return <Component />;
+}
 
 function Router() {
-  // make sure to consider if you need authentication for certain routes
   return (
     <Switch>
-      <Route path={"/"} component={Home} />
-      <Route path={"/whatsapp-chat"} component={WhatsAppChat} />
-      <Route path="/tickets" component={TicketsPlaceholder} />
-      <Route path="/relatorios" component={RelatoriosPlaceholder} />
-      <Route path={"/404"} component={NotFound} />
-      <Route path="/cooperados" component={Cooperados} />
-      <Route path="/contratos" component={Contratos} />
-      <Route path="/whatsapp" component={WhatsApp} />
-      <Route path="/configuracoes" component={Configuracoes} />
-      <Route path="/departamentos" component={Departamentos} />
-      <Route path="/settings/usuarios" component={Usuarios} />
-      <Route path="/settings/perfil-usuario" component={PerfilUsuario} />
-      <Route path="/settings/empresa" component={Empresa} />
-      <Route path="/settings/mensagens-automaticas" component={MensagensAutomaticas} />
-      <Route path="/settings/tipos-atendimentos" component={TiposAtendimentos} />
-      <Route path="/settings/importacoes" component={Importacoes} />
-      <Route path="/settings/apis" component={APIs} />
-      <Route path={"/404"} component={NotFound} />
-      {/* Final fallback route */}
-      <Route component={NotFound} />
+      <Route path="/auth/login" component={Login} />
+      <Route path="/auth/register" component={Register} />
+      
+      {/* Rota Protegida do Dashboard */}
+      <Route path="/">
+        {() => <PrivateRoute component={Home} />}
+      </Route>
+
+      <Route>
+        <div className="flex min-h-screen items-center justify-center">
+          <h1 className="text-2xl font-bold text-gray-800">404 - Página não encontrada</h1>
+        </div>
+      </Route>
     </Switch>
   );
 }
 
-// NOTE: About Theme
-// - First choose a default theme according to your design style (dark or light bg), than change color palette in index.css
-//   to keep consistent foreground/background color across components
-// - If you want to make theme switchable, pass `switchable` ThemeProvider and use `useTheme` hook
-
 function App() {
+  const [trpcClient] = useState(() =>
+    trpc.createClient({
+      links: [
+        httpBatchLink({
+          url: "/api/trpc",
+          async headers() { return {}; },
+        }),
+      ],
+    })
+  );
+
   return (
-    <ErrorBoundary>
-      <ThemeProvider
-        defaultTheme="light"
-        // switchable
-      >
-        <TooltipProvider>
-          <Toaster />
+    <trpc.Provider client={trpcClient} queryClient={queryClient}>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
           <Router />
-        </TooltipProvider>
-      </ThemeProvider>
-    </ErrorBoundary>
+          <Toaster />
+        </AuthProvider>
+      </QueryClientProvider>
+    </trpc.Provider>
   );
 }
 
