@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* --- VARIÁVEIS DE COR E TEMA (OKLCH) --- */
+
+:root {
+  /* CORES OFICIAIS DO DESIGN (Palette: #071E3A, #0B3B63, #0EA6C1) */
+  --blue-deep: 318 80% 12%; /* #071E3A - Fundo do painel visual */
+  --blue-mid: 300 70% 20%; /* #0B3B63 - Gradiente */
+  --accent: 190 85% 40%;   /* #0EA6C1 - Ponto de luz para animação */
+
+  /* Cores base do projeto */
+  --primary: oklch(0.35 0.08 240); 
+  --primary-foreground: oklch(1 0 0);
+  --sidebar-primary: oklch(0.20 0.06 240); 
+  --radius: 0.65rem;
+  
+  /* NOVAS VARIÁVEIS PARA O CARTÃO (Rigidez Visual) */
+  --card-radius-desktop: 5rem; /* ~80px */
+  --card-radius-mobile: 1.5rem; /* ~24px */
+  --card-width-desktop: 480px;
+
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.235 0.015 65);
+  --input: oklch(0.92 0.004 286.32);
+  --ring: oklch(0.623 0.214 259.815);
+  --destructive: oklch(0.577 0.245 27.325);
+}
+
+/* --- ANIMAÇÃO DE FUNDO (Movimento Suave) --- */
+@keyframes floatSlow {
+    0%   { transform: translate(0, 0) scale(1); }
+    50%  { transform: translate(-24px, -12px) scale(1.02); }
+    100% { transform: translate(0, 0) scale(1); }
+}
+
+@layer components {
+    /* Classe para aplicar o fundo azul animado */
+    .animated-bg {
+        /* TRADUÇÃO DO GRADIENTE RADIAL + LINEAR (Usando as novas variáveis) */
+        background: 
+            radial-gradient(600px 600px at 15% 85%, rgba(var(--accent),0.15), transparent 20%),
+            radial-gradient(400px 400px at 85% 5%, rgba(var(--accent),0.08), transparent 15%),
+            linear-gradient(180deg, hsl(var(--blue-deep)) 0%, hsl(var(--blue-mid)) 100%);
+        position: relative;
+        overflow: hidden;
+    }
+    
+    /* Pseudoelemento para o movimento sutil */
+    .animated-bg::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(500px 500px at 20% 80%, rgba(var(--accent), 0.1), transparent 50%); 
+        animation: floatSlow 18s linear infinite;
+        will-change: transform, opacity;
+    }
+    
+    /* Botão Primário Rigoroso (Para alinhar com o design) */
+    .btn-primary-auth {
+        @apply w-full h-[48px] bg-[#0c2856] text-white font-semibold transition-colors
+               hover:bg-[#005487] justify-center items-center rounded-[0.6rem];
+    }
+}
+
+@layer base {
+  * { @apply border-border outline-ring/50; }
+  body { @apply bg-background text-foreground; }
+}

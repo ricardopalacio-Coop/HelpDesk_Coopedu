@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { supabase } from "@/lib/supabase";
-import AuthLayout from "@/components/auth/AuthLayout"; // <-- CORRIGIDO: Importação padrão
+import AuthLayout from "@/components/auth/AuthLayout"; // <-- CORRIGIDO: Agora importa o DEFAULT
 import { Button } from "@/components/ui/button";
 import { 
   Form, FormControl, FormField, FormItem, FormLabel, FormMessage 
@@ -130,7 +130,7 @@ export default function Login() {
           {/* Botão de Entrar */}
           <Button 
             type="submit" 
-            className="w-full h-11 bg-[#0c2856] hover:bg-[#005487] text-white transition-all duration-300 shadow-lg shadow-blue-900/20" 
+            className="btn-primary-auth"
             disabled={isLoading}
           >
             {isLoading ? (

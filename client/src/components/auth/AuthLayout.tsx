@@ -1,4 +1,6 @@
 import { ReactNode } from "react";
+// Importa a função cn (clsx/tailwind-merge)
+import { cn } from "@/lib/utils"; 
 
 interface AuthLayoutProps {
   children: ReactNode;
@@ -6,20 +8,24 @@ interface AuthLayoutProps {
   subtitle: string;
 }
 
-function AuthLayout({ children, title, subtitle }: AuthLayoutProps) { // <-- REMOVIDO 'export' AQUI
+function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
   return (
     <div className="min-h-screen w-full flex bg-background">
-      {/* LADO ESQUERDO - Formulário (Largura Aumentada) */}
+      
+      {/* LADO ESQUERDO - Formulário e Logo */}
       <div className="w-full lg:w-1/2 flex flex-col justify-center items-center p-8 lg:p-16 animate-in slide-in-from-left-5 duration-500 fade-in">
+        
+        {/* Container Principal do Formulário */}
         <div className="w-full max-w-md space-y-8"> 
           
-          {/* LOGO: Posição no topo do contêiner */}
+          {/* LOGO: Posição no topo da área do formulário */}
           <div className="text-center lg:text-left">
             <div className="mb-8"> 
               <img 
                 src="/logo-coopedu.png" 
                 alt="Logo Coopedu"
-                className="h-9 w-auto object-contain"
+                // CORREÇÃO: Aumentado de h-9 para h-11 (22% maior)
+                className="h-11 w-auto object-contain" 
               />
             </div>
           </div>
@@ -36,7 +42,6 @@ function AuthLayout({ children, title, subtitle }: AuthLayoutProps) { // <-- REM
             </p>
           </div>
 
-          {/* Onde o formulário de Login/Register vai entrar */}
           {children}
 
           <p className="px-8 text-center text-xs text-muted-foreground pt-4">
@@ -46,8 +51,16 @@ function AuthLayout({ children, title, subtitle }: AuthLayoutProps) { // <-- REM
       </div>
 
       {/* LADO DIREITO - Visual Estilo Manus com Animação */}
-      <div className="hidden lg:flex w-1/2 relative bg-[#0c2856] text-white overflow-hidden items-center justify-center">
+      <div className={cn(
+        "hidden lg:flex w-1/2 relative animated-bg text-white overflow-hidden items-center justify-center",
+        "rounded-l-[5rem]"
+      )}>
         
+        {/* Logo visível no topo (para o caso de ser branco) */}
+        <div className="absolute top-8 left-8 z-20">
+          <img src="/logo-coopedu.png" alt="Coopedu" className="h-10 w-auto object-contain brightness-200" />
+        </div>
+
         {/* Imagem de Fundo (Com animação) */}
         <div 
           className="absolute inset-0 bg-cover bg-center opacity-30 mix-blend-overlay"
@@ -72,7 +85,7 @@ function AuthLayout({ children, title, subtitle }: AuthLayoutProps) { // <-- REM
           </blockquote>
         </div>
 
-        {/* Efeitos de Luz */}
+        {/* Efeitos de Luz (Mantém a animação/movimento) */}
         <div className="absolute top-0 right-0 -mt-20 -mr-20 w-96 h-96 bg-blue-500 rounded-full blur-3xl opacity-20 animate-pulse" />
         <div className="absolute bottom-0 left-0 -mb-20 -ml-20 w-80 h-80 bg-cyan-500 rounded-full blur-3xl opacity-20 animate-pulse delay-1000" />
       </div>
@@ -80,4 +93,4 @@ function AuthLayout({ children, title, subtitle }: AuthLayoutProps) { // <-- REM
   );
 }
 
-export default AuthLayout; // <-- ADICIONADO: Exportação Padrão
+export default AuthLayout;
