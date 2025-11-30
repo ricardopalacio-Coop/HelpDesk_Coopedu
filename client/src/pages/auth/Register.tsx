@@ -4,17 +4,20 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { supabase } from "@/lib/supabase";
-import AuthLayout from "@/components/auth/AuthLayout"; // <-- CORRIGIDO: Deve ser importação padrão
+import AuthLayout from "@/components/auth/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { 
+  Form, FormControl, FormField, FormItem, FormLabel, FormMessage 
+} from "@/components/ui/form";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, Mail, Lock, User, ArrowRight } from "lucide-react";
 
+// 1. Esquema de Validação (Regras)
 const registerSchema = z.object({
   name: z.string().min(3, "Nome deve ter pelo menos 3 caracteres"),
   email: z.string().email("E-mail inválido"),
-  password: z.string().min(6, "Mínimo 6 caracteres"),
+  password: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
   confirmPassword: z.string()
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
@@ -33,85 +36,125 @@ export default function Register() {
     defaultValues: { name: "", email: "", password: "", confirmPassword: "" },
   });
 
+  // 2. Ação de Cadastro
   async function onSubmit(data: RegisterFormValues) {
     setIsLoading(true);
     try {
+      // 1. Cria usuário no Supabase Auth
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
-        options: { data: { full_name: data.name } }
+        options: {
+          data: { full_name: data.name } // Salva o nome nos metadados
+        }
       });
 
       if (error) throw error;
+      
+      // TODO: No próximo passo, adicionar a chamada tRPC para sincronizar com o MySQL (tabela users)
 
-      toast({ title: "Conta criada!", description: "Bem-vindo ao sistema.", variant: "success" });
-      setTimeout(() => setLocation("/"), 1500);
+      // 2. Notificação e Redirecionamento UX (Validação Pendente)
+      toast({
+        title: "Conta criada!",
+        description: "Você será redirecionado para a validação.",
+        variant: "success"
+      });
+
+      // Redireciona para a tela de status de validação, passando o email
+      setTimeout(() => setLocation(`/auth/status?email=${encodeURIComponent(data.email)}&status=PENDING`), 1500);
 
     } catch (error: any) {
-      toast({ variant: "destructive", title: "Erro ao criar conta", description: error.message });
+      toast({
+        variant: "destructive",
+        title: "Falha ao criar conta",
+        description: error.message
+      });
     } finally {
       setIsLoading(false);
     }
   }
 
   return (
-    <AuthLayout title="Crie sua conta" subtitle="Junte-se à Coopedu.">
+    <AuthLayout 
+      title="Crie sua conta" 
+      subtitle="Junte-se à Coopedu e gerencie seus atendimentos."
+    >
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField control={form.control} name="name" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Nome Completo</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Seu nome" className="pl-10" {...field} />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-          <FormField control={form.control} name="email" render={({ field }) => (
-            <FormItem>
-              <FormLabel>E-mail</FormLabel>
-              <FormControl>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="seu@email.com" className="pl-10" {...field} />
-                </div>
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
+          
+          {/* Nome Completo */}
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome Completo</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <User className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="Seu nome" className="pl-10 h-11" {...field} />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* E-mail */}
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>E-mail</FormLabel>
+                <FormControl>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                    <Input placeholder="seu@email.com" className="pl-10 h-11" {...field} />
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Senha e Confirmar */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField control={form.control} name="password" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Senha</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input type="password" placeholder="******" className="pl-10" {...field} />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-            <FormField control={form.control} name="confirmPassword" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Confirmar</FormLabel>
-                <FormControl>
-                  <div className="relative">
-                    <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input type="password" placeholder="******" className="pl-10" {...field} />
-                  </div>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input type="password" placeholder="******" className="pl-10 h-11" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="confirmPassword"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirmar</FormLabel>
+                  <FormControl>
+                    <div className="relative">
+                      <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                      <Input type="password" placeholder="******" className="pl-10 h-11" {...field} />
+                    </div>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
-          <Button type="submit" className="w-full h-11 bg-[#0c2856] hover:bg-[#005487]" disabled={isLoading}>
+          <Button type="submit" className="btn-primary-auth h-11" disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <>Criar Conta <ArrowRight className="ml-2 h-4 w-4" /></>}
           </Button>
 
