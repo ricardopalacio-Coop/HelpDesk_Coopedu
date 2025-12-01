@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useLocation } from "wouter";
 import { supabase } from "@/lib/supabase";
+import { trpc } from "@/lib/trpc"; // Adicionar importação do tRPC
 import AuthLayout from "@/components/auth/AuthLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ export default function Register() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const userMutation = trpc.users.createUser.useMutation(); // Hook tRPC
 
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
@@ -45,13 +47,21 @@ export default function Register() {
         email: data.email,
         password: data.password,
         options: {
-          data: { full_name: data.name } // Salva o nome nos metadados
+          data: { full_name: data.name }
         }
       });
 
       if (error) throw error;
       
-      // TODO: No próximo passo, adicionar a chamada tRPC para sincronizar com o MySQL (tabela users)
+      // NOVO PASSO CRÍTICO: Sincronização com o MySQL via tRPC
+      if (authData.user) {
+        await userMutation.mutateAsync({
+          openId: authData.user.id, // O ID único do Supabase (UUID)
+          email: authData.user.email || data.email,
+          name: data.name,
+          role: 'user', // Defina o role inicial
+        });
+      }
 
       // 2. Notificação e Redirecionamento UX (Validação Pendente)
       toast({
@@ -67,7 +77,7 @@ export default function Register() {
       toast({
         variant: "destructive",
         title: "Falha ao criar conta",
-        description: error.message
+        description: error.message || "Erro desconhecido durante o cadastro."
       });
     } finally {
       setIsLoading(false);
@@ -154,8 +164,8 @@ export default function Register() {
             />
           </div>
 
-          <Button type="submit" className="btn-primary-auth h-11" disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <>Criar Conta <ArrowRight className="ml-2 h-4 w-4" /></>}
+          <Button type="submit" className="btn-primary-auth h-11" disabled={isLoading || userMutation.isPending}>
+            {isLoading || userMutation.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <>Criar Conta <ArrowRight className="ml-2 h-4 w-4" /></>}
           </Button>
 
           <div className="text-center text-sm text-muted-foreground pt-2">

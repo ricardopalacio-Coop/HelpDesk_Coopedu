@@ -3,7 +3,7 @@ import * as ToastPrimitives from "@radix-ui/react-toast";
 import { cva } from "class-variance-authority";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils"; 
-import { ToastActionElement } from "./toast-types"; // Importa tipos
+import { ToastActionElement } from "./toast-types"; 
 
 // --- Provedores e Viewport ---
 
@@ -78,7 +78,7 @@ const ToastAction = React.forwardRef<
 ToastAction.displayName = 'ToastAction'; 
 
 const ToastClose = React.forwardRef<
-  React.ElementRef<typeof ToastPrimitives.CloseButton>,
+  React.ElementOf<typeof ToastPrimitives.CloseButton>,
   React.ComponentPropsWithoutRef<typeof ToastPrimitives.CloseButton>
 >(({ className, ...props }, ref) => (
   <ToastPrimitives.CloseButton

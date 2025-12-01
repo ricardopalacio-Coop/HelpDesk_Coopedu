@@ -106,6 +106,9 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
+// [ALIAS PARA SINCRONIZAÇÃO] - O users.router.ts irá chamar esta função
+export const createMySqlUser = upsertUser; 
+
 // ============================================================================
 // PERFIS
 // ============================================================================
@@ -135,12 +138,7 @@ export async function updateProfile(id: number, data: Partial<InsertProfile>) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
   
-  const normalizedData = {
-    ...data,
-    ...(data.fullName && { fullName: normalizeText(data.fullName) }),
-  };
-  
-  await db.update(profiles).set(normalizedData).where(eq(profiles.id, id));
+  await db.update(profiles).set(data).where(eq(profiles.id, id));
 }
 
 // ============================================================================
