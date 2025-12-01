@@ -29,6 +29,7 @@ import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { getLoginUrl } from "@/const";
 
 const navigation = [
   {
@@ -135,7 +136,8 @@ export default function Sidebar() {
     try {
       await logoutMutation.mutateAsync();
       toast.success("Logout realizado com sucesso");
-      window.location.href = "/";
+      const loginUrl = getLoginUrl();
+      window.location.href = loginUrl;
     } catch (error) {
       toast.error("Erro ao fazer logout");
     }
