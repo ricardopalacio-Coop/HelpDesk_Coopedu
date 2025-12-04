@@ -96,21 +96,13 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden bg-white">
-      {/* Background Image - Darker watermark */}
       <div 
         className="absolute inset-0 bg-cover bg-center opacity-20"
         style={{ backgroundImage: `url(${callCenterBg})` }}
       />
-      
-      {/* Subtle overlay */}
       <div className="absolute inset-0 bg-white/60" />
-
-      {/* Geometric Border Pattern with Shine Animation */}
       <GeometricBorders />
-
-      {/* Main Content */}
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center px-4 py-8">
-        {/* Logo */}
         <div className="mb-6 animate-fade-in">
           <img 
             src={logoCoopedu} 
@@ -118,16 +110,12 @@ const Auth = () => {
             className="h-20 md:h-24 object-contain"
           />
         </div>
-
-        {/* System Title */}
         <div className="text-center mb-8 animate-fade-in" style={{ animationDelay: '0.1s' }}>
           <h1 className="text-2xl md:text-3xl font-bold text-coopedu-blue tracking-wide">
             Help Desk Cooperativas
           </h1>
           <div className="w-24 h-1 bg-gradient-to-r from-coopedu-teal to-coopedu-green mx-auto mt-3 rounded-full" />
         </div>
-
-        {/* Login Card */}
         <div 
           className="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-coopedu-blue/10 animate-fade-in"
           style={{ animationDelay: '0.2s' }}
@@ -140,7 +128,6 @@ const Auth = () => {
               {isLogin ? "Entre com suas credenciais" : "Preencha os dados abaixo"}
             </p>
           </div>
-
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
               <Label htmlFor="email">E-mail Corporativo</Label>
@@ -157,15 +144,11 @@ const Auth = () => {
                 />
               </div>
             </div>
-
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Senha</Label>
                 {isLogin && (
-                  <button
-                    type="button"
-                    className="text-sm text-coopedu-teal hover:underline"
-                  >
+                  <button type="button" className="text-sm text-coopedu-teal hover:underline">
                     Esqueceu a senha?
                   </button>
                 )}
@@ -183,7 +166,6 @@ const Auth = () => {
                 />
               </div>
             </div>
-
             <Button
               type="submit"
               disabled={loading}
@@ -193,7 +175,6 @@ const Auth = () => {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </form>
-
           <p className="text-center text-muted-foreground mt-6">
             {isLogin ? "Não tem uma conta?" : "Já tem uma conta?"}{" "}
             <button
@@ -205,8 +186,6 @@ const Auth = () => {
             </button>
           </p>
         </div>
-
-        {/* Footer */}
         <p className="text-center text-sm text-muted-foreground mt-8 animate-fade-in" style={{ animationDelay: '0.3s' }}>
           © 2025 Coopedu - Excelência em Educação
         </p>
@@ -218,11 +197,9 @@ const Auth = () => {
 const GeometricBorders = () => {
   return (
     <>
-      {/* Left Border - Overlapping triangles like reference */}
       <div className="absolute top-0 bottom-0 left-0 w-48 md:w-64 lg:w-80 overflow-hidden pointer-events-none">
         <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="xMinYMin slice" viewBox="0 0 300 800">
           <defs>
-            {/* Gradients for 3D effect */}
             <linearGradient id="greenGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor="#7AB82E" />
               <stop offset="100%" stopColor="#5A9020" />
@@ -239,7 +216,6 @@ const GeometricBorders = () => {
               <stop offset="0%" stopColor="#8BC4E0" />
               <stop offset="100%" stopColor="#5BA4C9" />
             </linearGradient>
-            {/* Shine animation */}
             <linearGradient id="shineL" x1="0%" y1="0%" x2="0%" y2="100%">
               <stop offset="0%" stopColor="white" stopOpacity="0">
                 <animate attributeName="offset" values="-0.2;1.2" dur="3s" repeatCount="indefinite" />
@@ -252,8 +228,6 @@ const GeometricBorders = () => {
               </stop>
             </linearGradient>
           </defs>
-          
-          {/* Top section - large triangles */}
           <polygon points="0,0 180,0 0,120" fill="url(#blueGrad1)" />
           <polygon points="0,0 120,0 60,80" fill="url(#greenGrad1)" />
           <polygon points="120,0 180,0 180,50 120,80" fill="url(#tealGrad1)" />
@@ -262,16 +236,12 @@ const GeometricBorders = () => {
           <polygon points="0,160 120,80 100,160 0,220" fill="url(#tealGrad1)" />
           <polygon points="0,200 150,100 180,150 0,300" fill="url(#greenGrad1)" />
           <polygon points="0,220 100,160 80,220 0,280" fill="url(#lightBlueGrad)" />
-          
-          {/* Middle section */}
           <polygon points="0,280 160,150 180,200 0,380" fill="url(#blueGrad1)" />
           <polygon points="0,300 100,220 120,280 0,400" fill="#7AB82E" />
           <polygon points="0,350 80,280 100,350 0,430" fill="url(#tealGrad1)" />
           <polygon points="0,400 140,280 160,340 0,500" fill="url(#blueGrad1)" />
           <polygon points="0,430 100,350 80,420 0,480" fill="url(#lightBlueGrad)" />
           <polygon points="0,480 120,380 140,440 0,560" fill="url(#greenGrad1)" />
-          
-          {/* Bottom section */}
           <polygon points="0,500 160,380 180,450 0,620" fill="url(#blueGrad1)" />
           <polygon points="0,560 100,480 120,560 0,650" fill="url(#tealGrad1)" />
           <polygon points="0,620 140,500 160,570 0,720" fill="#7AB82E" />
@@ -279,13 +249,9 @@ const GeometricBorders = () => {
           <polygon points="0,720 160,580 180,660 0,800" fill="url(#blueGrad1)" />
           <polygon points="0,740 100,660 80,740 0,800" fill="url(#greenGrad1)" />
           <polygon points="0,780 120,700 140,780 0,800" fill="url(#tealGrad1)" />
-          
-          {/* Shine overlay */}
           <rect x="0" y="0" width="300" height="800" fill="url(#shineL)" />
         </svg>
       </div>
-
-      {/* Floating small triangles - left side */}
       <div className="absolute left-52 md:left-72 top-1/4 pointer-events-none">
         <svg width="30" height="30" viewBox="0 0 30 30">
           <polygon points="15,0 30,30 0,30" fill="#0B2545" opacity="0.8" />
@@ -296,8 +262,6 @@ const GeometricBorders = () => {
           <polygon points="12,24 0,0 24,0" fill="#7AB82E" opacity="0.7" />
         </svg>
       </div>
-
-      {/* Right Border - Overlapping triangles like reference */}
       <div className="absolute top-0 bottom-0 right-0 w-48 md:w-64 lg:w-80 overflow-hidden pointer-events-none">
         <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="xMaxYMin slice" viewBox="0 0 300 800">
           <defs>
@@ -317,7 +281,6 @@ const GeometricBorders = () => {
               <stop offset="0%" stopColor="#8BC4E0" />
               <stop offset="100%" stopColor="#5BA4C9" />
             </linearGradient>
-            {/* Shine animation */}
             <linearGradient id="shineR" x1="0%" y1="100%" x2="0%" y2="0%">
               <stop offset="0%" stopColor="white" stopOpacity="0">
                 <animate attributeName="offset" values="-0.2;1.2" dur="3.5s" repeatCount="indefinite" />
@@ -330,8 +293,6 @@ const GeometricBorders = () => {
               </stop>
             </linearGradient>
           </defs>
-          
-          {/* Top section */}
           <polygon points="300,0 120,0 300,120" fill="url(#tealGrad2)" />
           <polygon points="300,0 180,0 240,80" fill="url(#greenGrad2)" />
           <polygon points="180,0 120,0 120,50 180,80" fill="url(#blueGrad2)" />
@@ -340,16 +301,12 @@ const GeometricBorders = () => {
           <polygon points="300,160 180,80 200,160 300,220" fill="url(#greenGrad2)" />
           <polygon points="300,200 150,100 120,150 300,300" fill="url(#tealGrad2)" />
           <polygon points="300,220 200,160 220,220 300,280" fill="url(#blueGrad2)" />
-          
-          {/* Middle section */}
           <polygon points="300,280 140,150 120,200 300,380" fill="url(#greenGrad2)" />
           <polygon points="300,300 200,220 180,280 300,400" fill="url(#blueGrad2)" />
           <polygon points="300,350 220,280 200,350 300,430" fill="url(#tealGrad2)" />
           <polygon points="300,400 160,280 140,340 300,500" fill="#7AB82E" />
           <polygon points="300,430 200,350 220,420 300,480" fill="url(#blueGrad2)" />
           <polygon points="300,480 180,380 160,440 300,560" fill="url(#lightBlueGrad2)" />
-          
-          {/* Bottom section */}
           <polygon points="300,500 140,380 120,450 300,620" fill="url(#greenGrad2)" />
           <polygon points="300,560 200,480 180,560 300,650" fill="url(#blueGrad2)" />
           <polygon points="300,620 160,500 140,570 300,720" fill="url(#tealGrad2)" />
@@ -357,13 +314,9 @@ const GeometricBorders = () => {
           <polygon points="300,720 140,580 120,660 300,800" fill="url(#greenGrad2)" />
           <polygon points="300,740 200,660 220,740 300,800" fill="url(#tealGrad2)" />
           <polygon points="300,780 180,700 160,780 300,800" fill="url(#blueGrad2)" />
-          
-          {/* Shine overlay */}
           <rect x="0" y="0" width="300" height="800" fill="url(#shineR)" />
         </svg>
       </div>
-
-      {/* Floating small triangles - right side */}
       <div className="absolute right-52 md:right-72 top-1/3 pointer-events-none">
         <svg width="25" height="25" viewBox="0 0 25 25">
           <polygon points="12.5,25 0,0 25,0" fill="#5BA4C9" opacity="0.7" />
