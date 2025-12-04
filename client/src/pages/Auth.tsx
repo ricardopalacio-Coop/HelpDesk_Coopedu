@@ -114,7 +114,7 @@ const Auth = () => {
           <h1 className="text-2xl md:text-3xl font-bold text-coopedu-blue tracking-wide">
             Help Desk Cooperativas
           </h1>
-          <div className="w-24 h-1 bg-gradient-to-r from-coopedu-teal to-coopedu-green mx-auto mt-3 rounded-full" />
+          <div className="w-20 h-1 bg-coopedu-teal mx-auto mt-3 rounded-full" />
         </div>
         <div 
           className="w-full max-w-md bg-white/90 backdrop-blur-sm rounded-2xl shadow-2xl p-8 border border-coopedu-blue/10 animate-fade-in"
