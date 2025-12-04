@@ -1,6 +1,25 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
-// import { sdk } from "./sdk"; // Desativado para não depender da Manus
+import { sdk } from "./sdk";
+
+const isBypassEnabled =
+  process.env.AUTH_BYPASS === "true" ||
+  (process.env.AUTH_BYPASS !== "false" && process.env.NODE_ENV !== "production");
+
+function buildMockAdmin(): User {
+  const now = new Date();
+  return {
+    id: 1,
+    openId: "bypass-admin-001",
+    name: "Administrador (Modo Teste)",
+    email: "admin@coopedu.com.br",
+    role: "admin",
+    loginMethod: "bypass",
+    createdAt: now,
+    updatedAt: now,
+    lastSignedIn: now,
+  };
+}
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -11,31 +30,20 @@ export type TrpcContext = {
 export async function createContext(
   opts: CreateExpressContextOptions
 ): Promise<TrpcContext> {
-  
-  // ============================================================
-  // 🔓 MODO BYPASS (IGNORAR LOGIN)
-  // ============================================================
-  // Este código cria um usuário "Admin" falso para que você possa
-  // acessar o sistema sem precisar da autenticação externa.
-  
-  const mockAdminUser: User = {
-    id: 1,
-    openId: "bypass-admin-001",
-    name: "Administrador (Modo Teste)",
-    email: "admin@coopedu.com.br",
-    role: "admin", // Permissão total
-    loginMethod: "bypass",
-    createdAt: new Date(),
-    updatedAt: new Date(),
-    lastSignedIn: new Date(),
-  };
+  if (isBypassEnabled) {
+    console.log("🔓 [Auth Bypass] Acessando como Administrador automaticamente.");
+    return {
+      req: opts.req,
+      res: opts.res,
+      user: buildMockAdmin(),
+    };
+  }
 
-  // Log para sabermos que funcionou quando olharmos no Zeabur
-  console.log("🔓 [Auth Bypass] Acessando como Administrador automaticamente.");
+  const user = await sdk.authenticateRequest(opts.req);
 
   return {
     req: opts.req,
     res: opts.res,
-    user: mockAdminUser,
+    user,
   };
 }
