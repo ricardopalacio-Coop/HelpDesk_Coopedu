@@ -26,8 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { trpc } from "@/lib/trpc";
+import { useSupabaseAuth } from "@/_core/hooks/useSupabaseAuth";
 import { toast } from "sonner";
 
 const navigation = [
@@ -126,20 +125,17 @@ const navigation = [
 
 export default function Sidebar() {
   const [location] = useLocation();
-  const { user } = useAuth();
+  const { user, logout, loading } = useSupabaseAuth();
   const [collapsed, setCollapsed] = React.useState(false);
   const [expandedMenu, setExpandedMenu] = React.useState<string | null>(null);
-  const logoutMutation = trpc.auth.logout.useMutation();
-
+ 
   const handleLogout = async () => {
-    try {
-      await logoutMutation.mutateAsync();
-      toast.success("Logout realizado com sucesso");
-      window.location.href = "/";
-    } catch (error) {
-      toast.error("Erro ao fazer logout");
-    }
-  };
+  try {
+    await logout();
+  } catch (error) {
+    toast.error("Erro ao fazer logout");
+  }
+};
 
   // Filtrar navegação baseado no role do usuário
   const filteredNavigation = navigation.filter((item) =>
@@ -304,7 +300,7 @@ export default function Sidebar() {
               size="sm"
               className="w-full justify-start bg-white/10 border-white/20 text-white hover:bg-white/20 hover:text-white transition-all duration-200"
               onClick={handleLogout}
-              disabled={logoutMutation.isPending}
+              disabled={loading}
             >
               <LogOut className="mr-2 h-4 w-4" />
               Sair
