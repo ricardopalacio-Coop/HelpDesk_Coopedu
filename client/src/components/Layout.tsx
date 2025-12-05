@@ -1,7 +1,6 @@
 import { ReactNode } from "react";
 import Sidebar from "./Sidebar";
-import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
+import { useSupabaseAuth } from "@/_core/hooks/useSupabaseAuth";
 import { Loader2 } from "lucide-react";
 
 interface LayoutProps {
@@ -9,9 +8,8 @@ interface LayoutProps {
 }
 
 export function Layout({ children }: LayoutProps) {
-  const { user, loading } = useAuth();
+  const { user, loading } = useSupabaseAuth();
 
-  // Mostrar loading enquanto verifica autenticação
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -20,9 +18,8 @@ export function Layout({ children }: LayoutProps) {
     );
   }
 
-  // Redirecionar para login se não autenticado
   if (!user) {
-    window.location.href = getLoginUrl();
+    window.location.href = "/auth";
     return null;
   }
 
