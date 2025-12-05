@@ -9,7 +9,7 @@ import { z } from "zod";
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 import logoCoopedu from "@/assets/logo-coopedu.png";
 import callCenterBg from "@/assets/call-center-bg.jpg";
-import bordas from "@/assets/bordas.png";
+// import bordas from "@/assets/bordas.png"; // Removido
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -161,24 +161,6 @@ const Login = () => {
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${callCenterBg})` }}
       />
-
-      {/* Left Border */}
-      <div className="absolute top-0 left-0 h-full pointer-events-none">
-        <img
-          src={bordas}
-          alt=""
-          className="h-full w-auto object-cover mix-blend-darken"
-        />
-      </div>
-
-      {/* Right Border */}
-      <div className="absolute top-0 right-0 h-full pointer-events-none">
-        <img
-          src={bordas}
-          alt=""
-          className="h-full w-auto object-cover mix-blend-darken scale-x-[-1]"
-        />
-      </div>
 
       {/* Login Card */}
       <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-8">
