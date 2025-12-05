@@ -1,62 +1,157 @@
-import { useState } from "react";
+// client/src/pages/Login.tsx
+import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+import { z } from "zod";
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
-import callCenterBg from "@/assets/call-center-bg.jpg";
 import logoCoopedu from "@/assets/logo-coopedu.png";
+import callCenterBg from "@/assets/call-center-bg.jpg";
 import bordas from "@/assets/bordas.png";
+
+const loginSchema = z.object({
+  email: z.string().email("Email inválido"),
+  password: z.string().min(6, "Senha deve ter no mínimo 6 caracteres"),
+});
 
 type AuthMode = "login" | "register" | "forgot";
 
 const Login = () => {
+  const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [mode, setMode] = useState<AuthMode>("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [success, setSuccess] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setSuccess(null);
-    setLoading(true);
-
-    try {
-      if (mode === "login") {
-        // TODO: Integrar com Supabase Auth - signInWithPassword
-        console.log("Login:", { email, password });
-      } else if (mode === "register") {
-        if (password !== confirmPassword) {
-          throw new Error("As senhas não coincidem");
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          setLocation("/");
         }
-        // TODO: Integrar com Supabase Auth - signUp
-        console.log("Register:", { email, password });
-        setSuccess("Conta criada! Verifique seu e-mail para confirmar.");
-      } else if (mode === "forgot") {
-        // TODO: Integrar com Supabase Auth - resetPasswordForEmail
-        console.log("Forgot password:", { email });
-        setSuccess("E-mail de recuperação enviado! Verifique sua caixa de entrada.");
       }
-    } catch (err: any) {
-      setError(err.message || "Ocorreu um erro. Tente novamente.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        setLocation("/");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [setLocation]);
 
   const resetForm = () => {
     setEmail("");
     setPassword("");
     setConfirmPassword("");
-    setError(null);
-    setSuccess(null);
   };
 
   const switchMode = (newMode: AuthMode) => {
     resetForm();
     setMode(newMode);
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+
+    try {
+      if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/reset-password`,
+        });
+        if (error) throw error;
+        toast({
+          title: "Sucesso!",
+          description: "E-mail de recuperação enviado! Verifique sua caixa de entrada.",
+        });
+        return;
+      }
+
+      const validatedData = loginSchema.parse({ email, password });
+
+      if (mode === "login") {
+        const { error } = await supabase.auth.signInWithPassword({
+          email: validatedData.email,
+          password: validatedData.password,
+        });
+
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast({
+              title: "Erro ao entrar",
+              description: "Email ou senha incorretos",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Erro ao entrar",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({
+            title: "Sucesso!",
+            description: "Login realizado com sucesso",
+          });
+        }
+      } else if (mode === "register") {
+        if (password !== confirmPassword) {
+          toast({
+            title: "Erro",
+            description: "As senhas não coincidem",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        const redirectUrl = `${window.location.origin}/`;
+        const { error } = await supabase.auth.signUp({
+          email: validatedData.email,
+          password: validatedData.password,
+          options: {
+            emailRedirectTo: redirectUrl,
+          },
+        });
+
+        if (error) {
+          if (error.message.includes("User already registered")) {
+            toast({
+              title: "Erro ao cadastrar",
+              description: "Este email já está cadastrado. Tente fazer login.",
+              variant: "destructive",
+            });
+          } else {
+            toast({
+              title: "Erro ao cadastrar",
+              description: error.message,
+              variant: "destructive",
+            });
+          }
+        } else {
+          toast({
+            title: "Sucesso!",
+            description: "Verifique seu email para confirmar o cadastro",
+          });
+        }
+      }
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast({
+          title: "Erro de validação",
+          description: error.errors[0].message,
+          variant: "destructive",
+        });
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -191,20 +286,6 @@ const Login = () => {
                     className="pl-10 h-11 border-gray-300 rounded-lg focus:border-[#1e3a5f] focus:ring-[#1e3a5f]"
                   />
                 </div>
-              </div>
-            )}
-
-            {/* Error Message */}
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-sm text-red-600">{error}</p>
-              </div>
-            )}
-
-            {/* Success Message */}
-            {success && (
-              <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                <p className="text-sm text-green-600">{success}</p>
               </div>
             )}
 
