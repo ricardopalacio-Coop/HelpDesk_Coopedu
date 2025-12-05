@@ -9,7 +9,6 @@ import { z } from "zod";
 import { Mail, Lock, ArrowRight } from "lucide-react";
 import logoCoopedu from "@/assets/logo-coopedu.png";
 import callCenterBg from "@/assets/call-center-bg.jpg";
-import bordasImg from "@/assets/bordas.png";
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -184,22 +183,6 @@ const Auth = () => {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{ backgroundImage: `url(${callCenterBg})` }}
-      />
-
-      {/* Left Triangle Border */}
-      <img 
-        src={bordasImg} 
-        alt="" 
-        className="absolute left-0 top-0 h-full w-auto object-cover object-left pointer-events-none"
-        style={{ maxWidth: '200px' }}
-      />
-
-      {/* Right Triangle Border */}
-      <img 
-        src={bordasImg} 
-        alt="" 
-        className="absolute right-0 top-0 h-full w-auto object-cover object-right pointer-events-none"
-        style={{ maxWidth: '200px', transform: 'scaleX(-1)' }}
       />
 
       {/* Content */}
