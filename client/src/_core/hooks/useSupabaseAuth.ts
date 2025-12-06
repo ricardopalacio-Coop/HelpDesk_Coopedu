@@ -69,7 +69,6 @@ export function useSupabaseAuth(options?: UseSupabaseAuthOptions) {
       if (error) throw error;
       setUser(null);
       setSession(null);
-      window.location.href = "/auth";
     } catch (err) {
       setError(err as Error);
     } finally {
