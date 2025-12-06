@@ -26,6 +26,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useSupabaseAuth } from "@/_core/hooks/useSupabaseAuth";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
@@ -132,16 +133,30 @@ export default function Sidebar() {
   const [collapsed, setCollapsed] = React.useState(false);
   const [expandedMenu, setExpandedMenu] = React.useState<string | null>(null);
   const displayName =
-    backendUser?.name?.trim() ||
+    backendUser?.fullName?.trim() ||
     ((user?.user_metadata?.name as string | undefined)?.trim() ?? "") ||
     user?.email ||
     "Usuário";
   const displayInitial = displayName.charAt(0).toUpperCase() || "U";
   const effectiveRole =
-    backendUser?.role ||
+    backendUser?.profileRole ||
     (user?.user_metadata?.role as string | undefined) ||
     (user?.role !== "authenticated" ? user?.role : undefined) ||
     "atendente";
+  const sidebarNickname =
+    backendUser?.nickname?.trim() ||
+    backendUser?.fullName?.trim() ||
+    displayName;
+  const sidebarProfileLabel =
+    backendUser?.profileName ||
+    (backendUser?.profileRole
+      ? backendUser.profileRole.charAt(0).toUpperCase() +
+        backendUser.profileRole.slice(1)
+      : effectiveRole);
+  const sidebarSubtitle = [sidebarProfileLabel, backendUser?.departmentName]
+    .filter(Boolean)
+    .join(" - ");
+  const sidebarAvatar = backendUser?.avatarUrl;
  
   const handleLogout = async () => {
   try {
@@ -298,13 +313,18 @@ export default function Sidebar() {
         {!collapsed ? (
           <>
             <div className="mb-3 flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white font-semibold backdrop-blur-sm flex-shrink-0">
-                {displayInitial}
-              </div>
+              <Avatar className="h-10 w-10 flex-shrink-0">
+                {sidebarAvatar ? (
+                  <AvatarImage src={sidebarAvatar} alt={sidebarNickname} />
+                ) : null}
+                <AvatarFallback>{displayInitial}</AvatarFallback>
+              </Avatar>
               <div className="flex-1 overflow-hidden">
-                <p className="truncate text-sm font-medium text-white">{displayName}</p>
-                <p className="truncate text-xs text-white/60 capitalize">
-                  {effectiveRole}
+                <p className="truncate text-sm font-semibold text-white">
+                  {sidebarNickname}
+                </p>
+                <p className="truncate text-xs text-white/70">
+                  {sidebarSubtitle || effectiveRole}
                 </p>
               </div>
             </div>
@@ -321,16 +341,24 @@ export default function Sidebar() {
             </Button>
           </>
         ) : (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="w-full bg-white/10 text-white hover:bg-white/20 hover:text-white transition-all duration-200"
-            onClick={handleLogout}
-            disabled={loading}
-            title="Sair"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
+          <div className="flex flex-col items-center gap-3">
+            <Avatar className="h-10 w-10">
+              {sidebarAvatar ? (
+                <AvatarImage src={sidebarAvatar} alt={sidebarNickname} />
+              ) : null}
+              <AvatarFallback>{displayInitial}</AvatarFallback>
+            </Avatar>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="w-full bg-white/10 text-white hover:bg-white/20 hover:text-white transition-all duration-200"
+              onClick={handleLogout}
+              disabled={loading}
+              title="Sair"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </div>
         )}
       </div>
     </div>

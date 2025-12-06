@@ -40,7 +40,11 @@ const userFormSchema = z.object({
   fullName: z.string().min(3, "Informe o nome completo"),
   nickname: z.string().min(2).optional().nullable(),
   email: z.string().email("E-mail inválido"),
-  phone: z.string().regex(/^\+55\d{10,11}$/, "Use o formato +5511999999999"),
+  phone: z
+    .string()
+    .regex(/^\+55\d{10,11}$/, "Use o formato +5511999999999")
+    .optional()
+    .nullable(),
   departmentId: z.number().optional().nullable(),
   profileTypeId: z.number(),
   avatar: z.string().optional().nullable(),
@@ -73,6 +77,15 @@ export default function Usuarios() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewUser, setViewUser] = useState<UserItem | null>(null);
   const [editingUser, setEditingUser] = useState<UserItem | null>(null);
+  const getFriendlyErrorMessage = (message?: string) => {
+    if (!message) return "Ocorreu um erro. Tente novamente.";
+    const map: Record<string, string> = {
+      EMAIL_IN_USE: "Já existe um usuário com esse e-mail.",
+      PROFILE_TYPE_NOT_FOUND: "Perfil de acesso não encontrado.",
+      SUPABASE_SYNC_FAILED: "Não foi possível sincronizar com o Supabase. Tente novamente.",
+    };
+    return map[message] ?? message;
+  };
 
   const pageSize = 10;
   const filters = useMemo(
@@ -92,14 +105,17 @@ export default function Usuarios() {
 
   const createUserMutation = trpc.users.create.useMutation({
     onSuccess: () => {
-      toast({ title: "Usuário cadastrado com sucesso" });
+      toast({
+        title: "Novo usuário criado com sucesso",
+        description: "O convite foi enviado para o e-mail informado.",
+      });
       usersQuery.refetch();
       setIsDialogOpen(false);
     },
     onError: (error) => {
       toast({
         title: "Erro ao cadastrar usuário",
-        description: error.message,
+        description: getFriendlyErrorMessage(error.message),
         variant: "destructive",
       });
     },
@@ -107,14 +123,17 @@ export default function Usuarios() {
 
   const updateUserMutation = trpc.users.update.useMutation({
     onSuccess: () => {
-      toast({ title: "Usuário atualizado com sucesso" });
+      toast({
+        title: "Usuário atualizado com sucesso",
+        description: "As informações foram sincronizadas.",
+      });
       usersQuery.refetch();
       setIsDialogOpen(false);
     },
     onError: (error) => {
       toast({
         title: "Erro ao atualizar usuário",
-        description: error.message,
+        description: getFriendlyErrorMessage(error.message),
         variant: "destructive",
       });
     },
@@ -122,13 +141,15 @@ export default function Usuarios() {
 
   const deleteUserMutation = trpc.users.delete.useMutation({
     onSuccess: () => {
-      toast({ title: "Usuário excluído" });
+      toast({
+        title: "Usuário removido com sucesso",
+      });
       usersQuery.refetch();
     },
     onError: (error) => {
       toast({
         title: "Erro ao excluir usuário",
-        description: error.message,
+        description: getFriendlyErrorMessage(error.message),
         variant: "destructive",
       });
     },
@@ -303,7 +324,7 @@ export default function Usuarios() {
               <Alert variant="destructive" className="mb-4">
                 <AlertTitle>Não foi possível carregar os usuários</AlertTitle>
                 <AlertDescription>
-                  {usersQuery.error.message || "Tente novamente em instantes."}
+                  {getFriendlyErrorMessage(usersQuery.error.message)}
                 </AlertDescription>
               </Alert>
             )}
@@ -548,7 +569,7 @@ export default function Usuarios() {
                     <FormItem>
                       <FormLabel>Telefone (+55)</FormLabel>
                       <FormControl>
-                        <Input placeholder="+5511999999999" {...field} />
+                        <Input placeholder="+5511999999999" {...field} value={field.value ?? ""} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

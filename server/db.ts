@@ -20,10 +20,12 @@ import { ENV } from './_core/env';
 import { normalizeText } from '../shared/textUtils';
 import { randomUUID } from "crypto";
 import { storagePut } from "./storage";
+import { getSupabaseAdminClient } from "./_core/supabaseAdmin";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 type DatabaseInstance = NonNullable<Awaited<ReturnType<typeof getDb>>>;
 let migrationsApplied = false;
+let supabaseSyncApplied = false;
 
 async function ensureMigrations(connectionString: string) {
   if (migrationsApplied) return;
@@ -47,6 +49,7 @@ export async function getDb() {
     try {
       await ensureMigrations(process.env.DATABASE_URL);
       _db = drizzle(process.env.DATABASE_URL);
+      await syncSupabaseUsersToDatabase();
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -167,6 +170,123 @@ export async function updateProfile(id: number, data: Partial<InsertProfile>) {
   await db.update(profiles).set(normalizedData).where(eq(profiles.id, id));
 }
 
+async function ensureProfileRecord(
+  userId: number,
+  data: {
+    fullName: string;
+    nickname?: string | null;
+    phone?: string | null;
+    avatarUrl?: string | null;
+    departmentId?: number | null;
+    profileTypeId?: number | null;
+  }
+) {
+  const db = await getDb();
+  if (!db) return;
+
+  const existing = await getProfileByUserId(userId);
+  const nickname = resolveNickname(data.fullName, data.nickname ?? undefined);
+
+  const payload = {
+    fullName: normalizeText(data.fullName),
+    nickname: nickname ? normalizeText(nickname) : null,
+    phone: data.phone ?? null,
+    avatarUrl: data.avatarUrl ?? null,
+    departmentId: data.departmentId ?? null,
+    profileTypeId: data.profileTypeId ?? existing?.profileTypeId ?? null,
+  };
+
+  if (!existing) {
+    await db.insert(profiles).values({
+      userId,
+      ...payload,
+      isActive: true,
+      isOnLeave: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  } else {
+    await db.update(profiles).set({
+      ...payload,
+      updatedAt: new Date(),
+    }).where(eq(profiles.id, existing.id));
+  }
+}
+
+async function syncSupabaseUsersToDatabase() {
+  if (supabaseSyncApplied) return;
+
+  const supabase = getSupabaseAdminClient();
+  if (!supabase) return;
+
+  const db = await getDb();
+  if (!db) return;
+
+  try {
+    const perPage = 100;
+    let page = 1;
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const { data, error } = await supabase.auth.admin.listUsers({
+        perPage,
+        page,
+      });
+
+      if (error) {
+        console.error("[Users Sync] Failed to list Supabase users:", error);
+        break;
+      }
+
+      const usersFromSupabase = data?.users ?? [];
+
+      for (const supabaseUser of usersFromSupabase) {
+        if (!supabaseUser.email) continue;
+
+        await upsertUser({
+          openId: supabaseUser.id,
+          name: supabaseUser.user_metadata?.fullName ?? supabaseUser.email,
+          email: supabaseUser.email,
+          role: coerceRole(
+            (supabaseUser.app_metadata?.role as string | undefined) ??
+              (supabaseUser.user_metadata?.role as string | undefined)
+          ),
+          lastSignedIn: supabaseUser.last_sign_in_at
+            ? new Date(supabaseUser.last_sign_in_at)
+            : new Date(),
+        });
+
+        const dbUser = await getUserByOpenId(supabaseUser.id);
+        if (!dbUser) continue;
+
+        await ensureProfileRecord(dbUser.id, {
+          fullName:
+            supabaseUser.user_metadata?.fullName ??
+            supabaseUser.email ??
+            "Usuário",
+          nickname: supabaseUser.user_metadata?.nickname,
+          phone: supabaseUser.user_metadata?.phone,
+          avatarUrl: supabaseUser.user_metadata?.avatarUrl,
+          departmentId: supabaseUser.user_metadata?.departmentId
+            ? Number(supabaseUser.user_metadata?.departmentId)
+            : null,
+          profileTypeId: supabaseUser.user_metadata?.profileTypeId
+            ? Number(supabaseUser.user_metadata?.profileTypeId)
+            : null,
+        });
+      }
+
+      if (usersFromSupabase.length < perPage) {
+        break;
+      }
+      page += 1;
+    }
+  } catch (error) {
+    console.error("[Users Sync] Unexpected error:", error);
+  } finally {
+    supabaseSyncApplied = true;
+  }
+}
+
 // ============================================================================
 // GESTÃO DE USUÁRIOS INTERNOS
 // ============================================================================
@@ -184,13 +304,29 @@ type UserInput = {
   fullName: string;
   nickname?: string | null;
   email: string;
-  phone: string;
+  phone?: string | null;
   departmentId?: number | null;
   profileTypeId: number;
   avatar?: string | null;
 };
 
 const DEFAULT_PAGE_SIZE = 10;
+const ALLOWED_ROLES: InsertUser["role"][] = ["admin", "gerente", "atendente", "user"];
+
+const resolveNickname = (fullName: string, nickname?: string | null) => {
+  if (nickname && nickname.trim().length > 0) {
+    return nickname.trim();
+  }
+  const first = fullName.trim().split(/\s+/)[0];
+  return first || fullName;
+};
+
+const coerceRole = (role?: string | null): InsertUser["role"] => {
+  if (role && ALLOWED_ROLES.includes(role as InsertUser["role"])) {
+    return role as InsertUser["role"];
+  }
+  return "user";
+};
 
 function buildUserConditions(filters: Partial<UserFilters>) {
   const clauses = [];
@@ -253,6 +389,7 @@ function mapUserRow(row: any) {
   if (!row) return null;
   return {
     id: row.id,
+    openId: row.openId,
     fullName: row.fullName,
     nickname: row.nickname ?? row.name,
     email: row.email,
@@ -296,6 +433,7 @@ export async function listSystemUsers(filters: Partial<UserFilters>) {
   const baseQueryBuilder = db
     .select({
       id: users.id,
+      openId: users.openId,
       fullName: profiles.fullName,
       nickname: profiles.nickname,
       name: users.name,
@@ -348,6 +486,7 @@ export async function getSystemUserById(id: number) {
   const result = await db
     .select({
       id: users.id,
+      openId: users.openId,
       fullName: profiles.fullName,
       nickname: profiles.nickname,
       name: users.name,
@@ -393,34 +532,87 @@ export async function createSystemUser(input: UserInput) {
   }
 
   const now = new Date();
-  const openId = `local-${randomUUID()}`;
   const avatarUrl = await maybeUploadAvatar(input.avatar);
+  const nickname = resolveNickname(input.fullName, input.nickname);
 
-  const [{ insertId }] = await db.insert(users).values({
-    openId,
-    name: input.nickname ? normalizeText(input.nickname) : normalizeText(input.fullName),
-    email: normalizedEmail,
-    role: profileType.role as InsertUser["role"],
-    createdAt: now,
-    updatedAt: now,
-    lastSignedIn: now,
-  });
+  const supabase = getSupabaseAdminClient();
+  let supabaseUserId: string | null = null;
 
-  await db.insert(profiles).values({
-    userId: Number(insertId),
-    fullName: normalizeText(input.fullName),
-    nickname: input.nickname ? normalizeText(input.nickname) : null,
-    phone: normalizePhoneNumber(input.phone),
-    departmentId: input.departmentId ?? null,
-    avatarUrl,
-    profileTypeId: input.profileTypeId,
-    isActive: true,
-    isOnLeave: false,
-    createdAt: now,
-    updatedAt: now,
-  });
+  if (supabase) {
+    try {
+      const { data, error } = await supabase.auth.admin.inviteUserByEmail(
+        normalizedEmail,
+        {
+          data: {
+            fullName: input.fullName,
+            nickname,
+            phone: input.phone ?? null,
+            departmentId: input.departmentId ?? null,
+            profileTypeId: input.profileTypeId,
+            avatarUrl,
+          },
+        }
+      );
 
-  return await getSystemUserById(Number(insertId));
+      if (error) {
+        if (error.message?.includes("already registered")) {
+          throw new Error("EMAIL_IN_USE");
+        }
+        throw error;
+      }
+
+      supabaseUserId = data?.user?.id ?? null;
+      if (!supabaseUserId) {
+        throw new Error("SUPABASE_USER_NOT_CREATED");
+      }
+    } catch (error) {
+      if (error instanceof Error && error.message === "EMAIL_IN_USE") {
+        throw error;
+      }
+      console.error("[Users] Failed to create Supabase user:", error);
+      throw new Error("SUPABASE_SYNC_FAILED");
+    }
+  } else {
+    console.warn("[Users] Supabase admin credentials missing, creating local user only.");
+    supabaseUserId = `local-${randomUUID()}`;
+  }
+
+  let insertId: number | null = null;
+  try {
+    const [{ insertId: newId }] = await db.insert(users).values({
+      openId: supabaseUserId,
+      name: normalizeText(nickname),
+      email: normalizedEmail,
+      role: profileType.role as InsertUser["role"],
+      createdAt: now,
+      updatedAt: now,
+      lastSignedIn: now,
+    });
+
+    insertId = Number(newId);
+
+    await db.insert(profiles).values({
+      userId: insertId,
+      fullName: normalizeText(input.fullName),
+      nickname: normalizeText(nickname),
+      phone: normalizePhoneNumber(input.phone),
+      departmentId: input.departmentId ?? null,
+      avatarUrl,
+      profileTypeId: input.profileTypeId,
+      isActive: true,
+      isOnLeave: false,
+      createdAt: now,
+      updatedAt: now,
+    });
+  } catch (error) {
+    const supabaseClient = getSupabaseAdminClient();
+    if (supabaseClient && supabaseUserId && supabaseUserId.startsWith("local-") === false) {
+      await supabaseClient.auth.admin.deleteUser(supabaseUserId).catch(() => null);
+    }
+    throw error;
+  }
+
+  return await getSystemUserById(insertId!);
 }
 
 export async function updateSystemUser(id: number, input: UserInput) {
@@ -452,9 +644,29 @@ export async function updateSystemUser(id: number, input: UserInput) {
   const avatarUrl = input.avatar === undefined
     ? current.avatarUrl
     : await maybeUploadAvatar(input.avatar);
+  const nickname = resolveNickname(input.fullName, input.nickname);
+
+  const supabase = getSupabaseAdminClient();
+  if (supabase && current.openId && !current.openId.startsWith("local-")) {
+    const { error } = await supabase.auth.admin.updateUserById(current.openId, {
+      email: normalizedEmail,
+      user_metadata: {
+        fullName: input.fullName,
+        nickname,
+        phone: input.phone ?? null,
+        departmentId: input.departmentId ?? null,
+        profileTypeId: input.profileTypeId,
+        avatarUrl,
+      },
+    });
+    if (error) {
+      console.error("[Users] Failed to update Supabase user:", error);
+      throw new Error("SUPABASE_SYNC_FAILED");
+    }
+  }
 
   await db.update(users).set({
-    name: input.nickname ? normalizeText(input.nickname) : normalizeText(input.fullName),
+    name: normalizeText(nickname),
     email: normalizedEmail,
     role: profileType.role as InsertUser["role"],
     updatedAt: new Date(),
@@ -462,7 +674,7 @@ export async function updateSystemUser(id: number, input: UserInput) {
 
   await db.update(profiles).set({
     fullName: normalizeText(input.fullName),
-    nickname: input.nickname ? normalizeText(input.nickname) : null,
+    nickname: normalizeText(nickname),
     phone: normalizePhoneNumber(input.phone),
     departmentId: input.departmentId ?? null,
     avatarUrl,
@@ -476,8 +688,14 @@ export async function updateSystemUser(id: number, input: UserInput) {
 export async function deleteSystemUser(id: number) {
   const db = await getDb();
   if (!db) throw new Error("Database not available");
+  const target = await getSystemUserById(id);
 
   await db.delete(users).where(eq(users.id, id));
+
+  const supabase = getSupabaseAdminClient();
+  if (supabase && target?.openId && !target.openId.startsWith("local-")) {
+    await supabase.auth.admin.deleteUser(target.openId).catch(() => null);
+  }
 }
 
 // ============================================================================

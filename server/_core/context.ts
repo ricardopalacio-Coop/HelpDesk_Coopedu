@@ -1,6 +1,6 @@
 import type { CreateExpressContextOptions } from "@trpc/server/adapters/express";
 import type { User } from "../../drizzle/schema";
-// import { sdk } from "./sdk"; // Desativado para não depender da Manus
+import { upsertUser, getUserByOpenId, createProfile, getProfileByUserId } from "../db";
 
 export type TrpcContext = {
   req: CreateExpressContextOptions["req"];
@@ -32,6 +32,30 @@ export async function createContext(
 
   // Log para sabermos que funcionou quando olharmos no Zeabur
   console.log("🔓 [Auth Bypass] Acessando como Administrador automaticamente.");
+
+  try {
+    await upsertUser(mockAdminUser);
+    const existing = await getUserByOpenId(mockAdminUser.openId);
+    if (existing) {
+      mockAdminUser.id = existing.id;
+      const profile = await getProfileByUserId(existing.id);
+      if (!profile) {
+        await createProfile({
+          userId: existing.id,
+          fullName: mockAdminUser.name ?? "Administrador",
+          nickname: "Admin",
+          profileTypeId: null,
+          departmentId: null,
+          isActive: true,
+          isOnLeave: false,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    }
+  } catch (error) {
+    console.warn("[Auth] Failed to ensure mock admin user in database:", error);
+  }
 
   return {
     req: opts.req,

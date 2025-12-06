@@ -11,9 +11,14 @@ const paginationSchema = z.object({
   profileTypeId: z.number().optional(),
 });
 
-const phoneSchema = z.string().trim().regex(/^\+?55\d{10,11}$/, {
-  message: "Informe o telefone com DDI +55 e apenas números",
-});
+const phoneSchema = z
+  .string()
+  .trim()
+  .regex(/^\+?55\d{10,11}$/, {
+    message: "Informe o telefone com DDI +55 e apenas números",
+  })
+  .optional()
+  .nullable();
 
 const avatarSchema = z
   .string()
