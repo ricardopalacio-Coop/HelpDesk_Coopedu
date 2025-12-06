@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useLocation } from "wouter";
 import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
         if (!session) {
-          navigate("/auth");
+          setLocation("/auth");
         } else {
           setLoading(false);
         }
@@ -19,14 +19,14 @@ const Index = () => {
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (!session) {
-        navigate("/auth");
+        setLocation("/auth");
       } else {
         setLoading(false);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [setLocation]);
 
   if (loading) {
     return (

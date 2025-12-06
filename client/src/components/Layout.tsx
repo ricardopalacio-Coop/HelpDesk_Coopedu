@@ -1,7 +1,8 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import { useSupabaseAuth } from "@/_core/hooks/useSupabaseAuth";
 import { Loader2 } from "lucide-react";
+import { useLocation } from "wouter";
 
 interface LayoutProps {
   children: ReactNode;
@@ -9,6 +10,13 @@ interface LayoutProps {
 
 export function Layout({ children }: LayoutProps) {
   const { user, loading } = useSupabaseAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!loading && !user) {
+      setLocation("/auth");
+    }
+  }, [loading, user, setLocation]);
 
   if (loading) {
     return (
@@ -19,7 +27,6 @@ export function Layout({ children }: LayoutProps) {
   }
 
   if (!user) {
-    window.location.href = "/auth";
     return null;
   }
 

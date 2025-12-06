@@ -183,10 +183,10 @@ const Login = () => {
       console.error('❌ Erro inesperado:', error);
       
       if (error instanceof z.ZodError) {
-        console.error('❌ Erro de validação:', error.errors);
+        console.error('❌ Erro de validação:', error.issues);
         toast({
           title: "Erro de validação",
-          description: error.errors[0].message,
+          description: error.issues[0]?.message,
           variant: "destructive",
         });
       } else {

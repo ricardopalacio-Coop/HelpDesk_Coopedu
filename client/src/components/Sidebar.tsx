@@ -128,6 +128,11 @@ export default function Sidebar() {
   const { user, logout, loading } = useSupabaseAuth();
   const [collapsed, setCollapsed] = React.useState(false);
   const [expandedMenu, setExpandedMenu] = React.useState<string | null>(null);
+  const displayName =
+    ((user?.user_metadata?.name as string | undefined)?.trim() ?? "") ||
+    user?.email ||
+    "Usuário";
+  const displayInitial = displayName.charAt(0).toUpperCase() || "U";
  
   const handleLogout = async () => {
   try {
@@ -285,10 +290,10 @@ export default function Sidebar() {
           <>
             <div className="mb-3 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/20 text-white font-semibold backdrop-blur-sm flex-shrink-0">
-                {user?.name?.charAt(0).toUpperCase() || "U"}
+                {displayInitial}
               </div>
               <div className="flex-1 overflow-hidden">
-                <p className="truncate text-sm font-medium text-white">{user?.name || "Usuário"}</p>
+                <p className="truncate text-sm font-medium text-white">{displayName}</p>
                 <p className="truncate text-xs text-white/60 capitalize">
                   {user?.role || "atendente"}
                 </p>
@@ -312,7 +317,7 @@ export default function Sidebar() {
             size="icon"
             className="w-full bg-white/10 text-white hover:bg-white/20 hover:text-white transition-all duration-200"
             onClick={handleLogout}
-            disabled={logoutMutation.isPending}
+            disabled={loading}
             title="Sair"
           >
             <LogOut className="h-5 w-5" />
