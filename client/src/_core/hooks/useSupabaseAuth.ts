@@ -40,9 +40,31 @@ export function useSupabaseAuth(options?: UseSupabaseAuthOptions) {
     }
   }, [loading, user, redirectOnUnauthenticated, redirectPath]);
 
+  const forceClearAuthStorage = useCallback(() => {
+    if (typeof window === "undefined") return;
+    try {
+      const clearKeys = (storage: Storage) => {
+        const keys = [];
+        for (let i = 0; i < storage.length; i++) {
+          const key = storage.key(i);
+          if (!key) continue;
+          if (key.startsWith("sb-") || key.toLowerCase().includes("supabase")) {
+            keys.push(key);
+          }
+        }
+        keys.forEach(key => storage.removeItem(key));
+      };
+      clearKeys(window.localStorage);
+      clearKeys(window.sessionStorage);
+    } catch (err) {
+      console.warn("Não foi possível limpar o storage do Supabase", err);
+    }
+  }, []);
+
   const logout = useCallback(async () => {
     try {
       setLoading(true);
+      forceClearAuthStorage();
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
       setUser(null);
@@ -53,7 +75,7 @@ export function useSupabaseAuth(options?: UseSupabaseAuthOptions) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [forceClearAuthStorage]);
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {
