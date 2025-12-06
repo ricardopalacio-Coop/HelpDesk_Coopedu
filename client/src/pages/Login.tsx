@@ -9,7 +9,6 @@ import { z } from "zod";
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 import logoCoopedu from "@/assets/logo-coopedu.png";
 import callCenterBg from "@/assets/call-center-bg.jpg";
-// import bordas from "@/assets/bordas.png"; // Removido
 
 const loginSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -28,21 +27,30 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    console.log('🔍 Login: Verificando sessão existente...');
+    
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
+        console.log('🔐 Auth State Changed:', event, session);
         if (session) {
+          console.log('✅ Sessão ativa, redirecionando para /');
           setLocation("/");
         }
       }
     );
 
     supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('📋 Sessão atual:', session);
       if (session) {
+        console.log('✅ Usuário já autenticado, redirecionando...');
         setLocation("/");
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      console.log('🧹 Limpando subscription de auth');
+      subscription.unsubscribe();
+    };
   }, [setLocation]);
 
   const resetForm = () => {
@@ -52,36 +60,55 @@ const Login = () => {
   };
 
   const switchMode = (newMode: AuthMode) => {
+    console.log('🔄 Mudando modo para:', newMode);
     resetForm();
     setMode(newMode);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('📝 Formulário submetido, modo:', mode);
     setLoading(true);
 
     try {
+      // Modo: Recuperar Senha
       if (mode === "forgot") {
+        console.log('📧 Enviando email de recuperação para:', email);
         const { error } = await supabase.auth.resetPasswordForEmail(email, {
           redirectTo: `${window.location.origin}/reset-password`,
         });
-        if (error) throw error;
+        
+        if (error) {
+          console.error('❌ Erro ao enviar email:', error);
+          throw error;
+        }
+        
+        console.log('✅ Email de recuperação enviado');
         toast({
           title: "Sucesso!",
           description: "E-mail de recuperação enviado! Verifique sua caixa de entrada.",
         });
+        setLoading(false);
         return;
       }
 
+      // Validação dos dados
+      console.log('🔍 Validando dados...');
       const validatedData = loginSchema.parse({ email, password });
+      console.log('✅ Dados validados');
 
+      // Modo: Login
       if (mode === "login") {
-        const { error } = await supabase.auth.signInWithPassword({
+        console.log('🔑 Tentando fazer login com:', validatedData.email);
+        
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: validatedData.email,
           password: validatedData.password,
         });
 
         if (error) {
+          console.error('❌ Erro no login:', error);
+          
           if (error.message.includes("Invalid login credentials")) {
             toast({
               title: "Erro ao entrar",
@@ -96,23 +123,31 @@ const Login = () => {
             });
           }
         } else {
+          console.log('✅ Login bem-sucedido!', data);
           toast({
             title: "Sucesso!",
             description: "Login realizado com sucesso",
           });
+          // O redirecionamento será feito pelo onAuthStateChange
         }
-      } else if (mode === "register") {
+      } 
+      // Modo: Registro
+      else if (mode === "register") {
         if (password !== confirmPassword) {
+          console.warn('⚠️ Senhas não coincidem');
           toast({
             title: "Erro",
             description: "As senhas não coincidem",
             variant: "destructive",
           });
+          setLoading(false);
           return;
         }
 
+        console.log('📝 Tentando registrar usuário:', validatedData.email);
         const redirectUrl = `${window.location.origin}/`;
-        const { error } = await supabase.auth.signUp({
+        
+        const { data, error } = await supabase.auth.signUp({
           email: validatedData.email,
           password: validatedData.password,
           options: {
@@ -121,6 +156,8 @@ const Login = () => {
         });
 
         if (error) {
+          console.error('❌ Erro no registro:', error);
+          
           if (error.message.includes("User already registered")) {
             toast({
               title: "Erro ao cadastrar",
@@ -135,6 +172,7 @@ const Login = () => {
             });
           }
         } else {
+          console.log('✅ Registro bem-sucedido!', data);
           toast({
             title: "Sucesso!",
             description: "Verifique seu email para confirmar o cadastro",
@@ -142,14 +180,24 @@ const Login = () => {
         }
       }
     } catch (error) {
+      console.error('❌ Erro inesperado:', error);
+      
       if (error instanceof z.ZodError) {
+        console.error('❌ Erro de validação:', error.errors);
         toast({
           title: "Erro de validação",
           description: error.errors[0].message,
           variant: "destructive",
         });
+      } else {
+        toast({
+          title: "Erro",
+          description: "Ocorreu um erro inesperado. Tente novamente.",
+          variant: "destructive",
+        });
       }
     } finally {
+      console.log('🏁 Finalizando submit');
       setLoading(false);
     }
   };
