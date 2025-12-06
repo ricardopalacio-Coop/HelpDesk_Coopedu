@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import {
   Dialog,
   DialogContent,
@@ -229,7 +230,7 @@ export default function Usuarios() {
               Cadastre, edite e gerencie os usuários internos do Help Desk.
             </p>
           </div>
-          <Button onClick={handleOpenCreate} disabled={profileOptions.length === 0}>
+          <Button onClick={handleOpenCreate}>
             <Plus className="mr-2 h-4 w-4" />
             Novo Usuário
           </Button>
@@ -298,6 +299,14 @@ export default function Usuarios() {
             <CardTitle>Usuários cadastrados</CardTitle>
           </CardHeader>
           <CardContent>
+            {usersQuery.error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertTitle>Não foi possível carregar os usuários</AlertTitle>
+                <AlertDescription>
+                  {usersQuery.error.message || "Tente novamente em instantes."}
+                </AlertDescription>
+              </Alert>
+            )}
             <div className="overflow-x-auto">
               <Table>
                 <TableHeader>

@@ -1,5 +1,8 @@
 import { eq, and, like, desc, sql, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
+import { migrate } from "drizzle-orm/mysql2/migrator";
+import mysql from "mysql2/promise";
+import path from "path";
 import { 
   InsertUser, users, profiles, departments, cooperados, cooperadoPhones, 
   cooperadoBankData, contracts, attendanceReasons, tickets, ticketMessages,
@@ -20,11 +23,29 @@ import { storagePut } from "./storage";
 
 let _db: ReturnType<typeof drizzle> | null = null;
 type DatabaseInstance = NonNullable<Awaited<ReturnType<typeof getDb>>>;
+let migrationsApplied = false;
+
+async function ensureMigrations(connectionString: string) {
+  if (migrationsApplied) return;
+  try {
+    const connection = await mysql.createConnection(connectionString);
+    const migratorDb = drizzle(connection);
+    await migrate(migratorDb, {
+      migrationsFolder: path.resolve(process.cwd(), "drizzle"),
+    });
+    await connection.end();
+    migrationsApplied = true;
+    console.log("[Database] Migrations executed successfully");
+  } catch (error) {
+    console.error("[Database] Failed to run migrations:", error);
+  }
+}
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
+      await ensureMigrations(process.env.DATABASE_URL);
       _db = drizzle(process.env.DATABASE_URL);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
