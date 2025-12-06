@@ -1,22 +1,25 @@
-import { eq, and, like, desc, sql } from "drizzle-orm";
+import { eq, and, like, desc, sql, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { 
   InsertUser, users, profiles, departments, cooperados, cooperadoPhones, 
   cooperadoBankData, contracts, attendanceReasons, tickets, ticketMessages,
   ticketHistory, ticketTimeTracking, csatSurveys, whatsappSessions as whatsappSessionsTable,
-  quickMessages,
+  quickMessages, userProfileTypes,
   type InsertProfile, type InsertDepartment, type InsertCooperado,
   type InsertCooperadoPhone, type InsertCooperadoBankData, type InsertContract,
   type InsertAttendanceReason, type InsertTicket, type InsertTicketMessage,
   type InsertTicketHistory, type InsertTicketTimeTracking, type InsertCsatSurvey,
-  type InsertWhatsappSession, type InsertQuickMessage
+  type InsertWhatsappSession, type InsertQuickMessage, type UserProfileType
 } from "../drizzle/schema";
 
 export { whatsappSessionsTable as whatsappSessions };
 import { ENV } from './_core/env';
 import { normalizeText } from '../shared/textUtils';
+import { randomUUID } from "crypto";
+import { storagePut } from "./storage";
 
 let _db: ReturnType<typeof drizzle> | null = null;
+type DatabaseInstance = NonNullable<Awaited<ReturnType<typeof getDb>>>;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
@@ -141,6 +144,319 @@ export async function updateProfile(id: number, data: Partial<InsertProfile>) {
   };
   
   await db.update(profiles).set(normalizedData).where(eq(profiles.id, id));
+}
+
+// ============================================================================
+// GESTÃO DE USUÁRIOS INTERNOS
+// ============================================================================
+
+type UserFilters = {
+  page: number;
+  pageSize: number;
+  search?: string;
+  email?: string;
+  departmentId?: number;
+  profileTypeId?: number;
+};
+
+type UserInput = {
+  fullName: string;
+  nickname?: string | null;
+  email: string;
+  phone: string;
+  departmentId?: number | null;
+  profileTypeId: number;
+  avatar?: string | null;
+};
+
+const DEFAULT_PAGE_SIZE = 10;
+
+function buildUserConditions(filters: Partial<UserFilters>) {
+  const clauses = [];
+
+  if (filters.search) {
+    const term = `%${filters.search.trim()}%`;
+    clauses.push(
+      or(
+        like(users.name, term),
+        like(profiles.fullName, term),
+        like(users.email, term)
+      )
+    );
+  }
+
+  if (filters.email) {
+    clauses.push(like(users.email, `%${filters.email.trim()}%`));
+  }
+
+  if (filters.departmentId) {
+    clauses.push(eq(profiles.departmentId, filters.departmentId));
+  }
+
+  if (filters.profileTypeId) {
+    clauses.push(eq(profiles.profileTypeId, filters.profileTypeId));
+  }
+
+  return clauses.length ? and(...clauses) : undefined;
+}
+
+function normalizePhoneNumber(phone?: string | null) {
+  if (!phone) return null;
+  const digits = phone.replace(/\D/g, "");
+  if (!digits) return null;
+  const normalized = digits.startsWith("55") ? digits.slice(2) : digits;
+  return `+55${normalized}`;
+}
+
+async function maybeUploadAvatar(avatar?: string | null) {
+  if (!avatar) return null;
+  if (avatar.startsWith("http")) return avatar;
+  const base64Match = avatar.match(/^data:(.+);base64,(.+)$/);
+  if (!base64Match) {
+    return avatar;
+  }
+  const [, mime, data] = base64Match;
+  try {
+    const buffer = Buffer.from(data, "base64");
+    const extension = mime.split("/")[1] ?? "png";
+    const key = `avatars/${randomUUID()}.${extension}`;
+    const { url } = await storagePut(key, buffer, mime);
+    return url;
+  } catch (error) {
+    console.warn("[Users] Falha ao enviar avatar, usando data-url local", error);
+    return avatar;
+  }
+}
+
+function mapUserRow(row: any) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    fullName: row.fullName,
+    nickname: row.nickname ?? row.name,
+    email: row.email,
+    phone: row.phone,
+    departmentId: row.departmentId,
+    departmentName: row.departmentName,
+    profileTypeId: row.profileTypeId,
+    profileName: row.profileName,
+    profileRole: row.profileRole,
+    avatarUrl: row.avatarUrl,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt,
+  };
+}
+
+async function fetchProfileType(db: DatabaseInstance, profileTypeId: number) {
+  const result = await db
+    .select()
+    .from(userProfileTypes)
+    .where(eq(userProfileTypes.id, profileTypeId))
+    .limit(1);
+  return result[0];
+}
+
+export async function listUserProfileTypes() {
+  const db = await getDb();
+  if (!db) return [];
+  return await db.select().from(userProfileTypes).orderBy(userProfileTypes.name);
+}
+
+export async function listSystemUsers(filters: Partial<UserFilters>) {
+  const db = await getDb();
+  if (!db) {
+    return { items: [], total: 0 };
+  }
+
+  const page = Math.max(filters.page ?? 1, 1);
+  const pageSize = Math.min(filters.pageSize ?? DEFAULT_PAGE_SIZE, 100);
+  const where = buildUserConditions(filters);
+
+  const baseQueryBuilder = db
+    .select({
+      id: users.id,
+      fullName: profiles.fullName,
+      nickname: profiles.nickname,
+      name: users.name,
+      email: users.email,
+      phone: profiles.phone,
+      departmentId: profiles.departmentId,
+      departmentName: departments.name,
+      profileTypeId: profiles.profileTypeId,
+      profileName: userProfileTypes.name,
+      profileRole: userProfileTypes.role,
+      avatarUrl: profiles.avatarUrl,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(users)
+    .leftJoin(profiles, eq(profiles.userId, users.id))
+    .leftJoin(departments, eq(profiles.departmentId, departments.id))
+    .leftJoin(userProfileTypes, eq(profiles.profileTypeId, userProfileTypes.id));
+
+  const totalQueryBuilder = db
+    .select({ value: sql<number>`count(*)` })
+    .from(users)
+    .leftJoin(profiles, eq(profiles.userId, users.id));
+
+  const paginatedQuery = (where ? baseQueryBuilder.where(where) : baseQueryBuilder)
+    .orderBy(desc(users.createdAt))
+    .limit(pageSize)
+    .offset((page - 1) * pageSize);
+
+  const totalQuery = where ? totalQueryBuilder.where(where) : totalQueryBuilder;
+
+  const [items, totalResult] = await Promise.all([paginatedQuery, totalQuery]);
+  const total = totalResult[0]?.value ?? 0;
+  const mappedItems = items
+    .map(mapUserRow)
+    .filter((item): item is NonNullable<ReturnType<typeof mapUserRow>> => Boolean(item));
+
+  return {
+    items: mappedItems,
+    total,
+    page,
+    pageSize,
+  };
+}
+
+export async function getSystemUserById(id: number) {
+  const db = await getDb();
+  if (!db) return null;
+
+  const result = await db
+    .select({
+      id: users.id,
+      fullName: profiles.fullName,
+      nickname: profiles.nickname,
+      name: users.name,
+      email: users.email,
+      phone: profiles.phone,
+      departmentId: profiles.departmentId,
+      departmentName: departments.name,
+      profileTypeId: profiles.profileTypeId,
+      profileName: userProfileTypes.name,
+      profileRole: userProfileTypes.role,
+      avatarUrl: profiles.avatarUrl,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt,
+    })
+    .from(users)
+    .leftJoin(profiles, eq(profiles.userId, users.id))
+    .leftJoin(departments, eq(profiles.departmentId, departments.id))
+    .leftJoin(userProfileTypes, eq(profiles.profileTypeId, userProfileTypes.id))
+    .where(eq(users.id, id))
+    .limit(1);
+
+  return mapUserRow(result[0]);
+}
+
+export async function createSystemUser(input: UserInput) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const normalizedEmail = input.email.trim().toLowerCase();
+  const existing = await db
+    .select({ id: users.id })
+    .from(users)
+    .where(eq(users.email, normalizedEmail))
+    .limit(1);
+
+  if (existing.length) {
+    throw new Error("EMAIL_IN_USE");
+  }
+
+  const profileType = await fetchProfileType(db, input.profileTypeId);
+  if (!profileType) {
+    throw new Error("PROFILE_TYPE_NOT_FOUND");
+  }
+
+  const now = new Date();
+  const openId = `local-${randomUUID()}`;
+  const avatarUrl = await maybeUploadAvatar(input.avatar);
+
+  const [{ insertId }] = await db.insert(users).values({
+    openId,
+    name: input.nickname ? normalizeText(input.nickname) : normalizeText(input.fullName),
+    email: normalizedEmail,
+    role: profileType.role as InsertUser["role"],
+    createdAt: now,
+    updatedAt: now,
+    lastSignedIn: now,
+  });
+
+  await db.insert(profiles).values({
+    userId: Number(insertId),
+    fullName: normalizeText(input.fullName),
+    nickname: input.nickname ? normalizeText(input.nickname) : null,
+    phone: normalizePhoneNumber(input.phone),
+    departmentId: input.departmentId ?? null,
+    avatarUrl,
+    profileTypeId: input.profileTypeId,
+    isActive: true,
+    isOnLeave: false,
+    createdAt: now,
+    updatedAt: now,
+  });
+
+  return await getSystemUserById(Number(insertId));
+}
+
+export async function updateSystemUser(id: number, input: UserInput) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  const current = await getSystemUserById(id);
+  if (!current) {
+    throw new Error("USER_NOT_FOUND");
+  }
+
+  const normalizedEmail = input.email.trim().toLowerCase();
+  if (normalizedEmail !== (current.email ?? "")) {
+    const existing = await db
+      .select({ id: users.id })
+      .from(users)
+      .where(and(eq(users.email, normalizedEmail), sql`${users.id} <> ${id}`))
+      .limit(1);
+    if (existing.length) {
+      throw new Error("EMAIL_IN_USE");
+    }
+  }
+
+  const profileType = await fetchProfileType(db, input.profileTypeId);
+  if (!profileType) {
+    throw new Error("PROFILE_TYPE_NOT_FOUND");
+  }
+
+  const avatarUrl = input.avatar === undefined
+    ? current.avatarUrl
+    : await maybeUploadAvatar(input.avatar);
+
+  await db.update(users).set({
+    name: input.nickname ? normalizeText(input.nickname) : normalizeText(input.fullName),
+    email: normalizedEmail,
+    role: profileType.role as InsertUser["role"],
+    updatedAt: new Date(),
+  }).where(eq(users.id, id));
+
+  await db.update(profiles).set({
+    fullName: normalizeText(input.fullName),
+    nickname: input.nickname ? normalizeText(input.nickname) : null,
+    phone: normalizePhoneNumber(input.phone),
+    departmentId: input.departmentId ?? null,
+    avatarUrl,
+    profileTypeId: input.profileTypeId,
+    updatedAt: new Date(),
+  }).where(eq(profiles.userId, id));
+
+  return await getSystemUserById(id);
+}
+
+export async function deleteSystemUser(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+
+  await db.delete(users).where(eq(users.id, id));
 }
 
 // ============================================================================

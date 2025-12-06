@@ -1,4 +1,4 @@
-import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, boolean, date, json } from "drizzle-orm/mysql-core";
+import { int, mysqlEnum, mysqlTable, text, timestamp, varchar, bigint, boolean, date, json, uniqueIndex } from "drizzle-orm/mysql-core";
 import { relations } from "drizzle-orm";
 
 /**
@@ -20,12 +20,27 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+}, (table) => ({
+  emailIdx: uniqueIndex("users_email_unique").on(table.email),
+}));
+
+export const userProfileTypes = mysqlTable("user_profile_types", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  description: text("description"),
+  role: mysqlEnum("role", ["user", "admin", "gerente", "atendente"]).notNull().default("user"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
 
 export const profiles = mysqlTable("profiles", {
   id: int("id").autoincrement().primaryKey(),
   userId: int("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
   fullName: varchar("fullName", { length: 255 }).notNull(),
+  nickname: varchar("nickname", { length: 120 }),
+  phone: varchar("phone", { length: 32 }),
+  avatarUrl: text("avatarUrl"),
+  profileTypeId: int("profileTypeId").references(() => userProfileTypes.id),
   departmentId: int("departmentId").references(() => departments.id),
   isActive: boolean("isActive").default(true).notNull(),
   isOnLeave: boolean("isOnLeave").default(false).notNull(),
@@ -261,6 +276,9 @@ export type InsertUser = typeof users.$inferInsert;
 
 export type Profile = typeof profiles.$inferSelect;
 export type InsertProfile = typeof profiles.$inferInsert;
+
+export type UserProfileType = typeof userProfileTypes.$inferSelect;
+export type InsertUserProfileType = typeof userProfileTypes.$inferInsert;
 
 export type Department = typeof departments.$inferSelect;
 export type InsertDepartment = typeof departments.$inferInsert;
