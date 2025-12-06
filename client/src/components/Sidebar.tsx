@@ -28,6 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useSupabaseAuth } from "@/_core/hooks/useSupabaseAuth";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
 
 const navigation = [
   {
@@ -126,13 +127,22 @@ const navigation = [
 export default function Sidebar() {
   const [location] = useLocation();
   const { user, logout, loading } = useSupabaseAuth();
+  const { data: backendUser } = trpc.auth.me.useQuery(undefined, {
+    refetchOnWindowFocus: false,
+  });
   const [collapsed, setCollapsed] = React.useState(false);
   const [expandedMenu, setExpandedMenu] = React.useState<string | null>(null);
   const displayName =
+    backendUser?.name?.trim() ||
     ((user?.user_metadata?.name as string | undefined)?.trim() ?? "") ||
     user?.email ||
     "Usuário";
   const displayInitial = displayName.charAt(0).toUpperCase() || "U";
+  const effectiveRole =
+    backendUser?.role ||
+    (user?.user_metadata?.role as string | undefined) ||
+    (user?.role !== "authenticated" ? user?.role : undefined) ||
+    "atendente";
  
   const handleLogout = async () => {
   try {
@@ -144,7 +154,7 @@ export default function Sidebar() {
 
   // Filtrar navegação baseado no role do usuário
   const filteredNavigation = navigation.filter((item) =>
-    item.roles.includes(user?.role || "atendente")
+    item.roles.includes(effectiveRole)
   );
 
   return (
@@ -295,7 +305,7 @@ export default function Sidebar() {
               <div className="flex-1 overflow-hidden">
                 <p className="truncate text-sm font-medium text-white">{displayName}</p>
                 <p className="truncate text-xs text-white/60 capitalize">
-                  {user?.role || "atendente"}
+                  {effectiveRole}
                 </p>
               </div>
             </div>
