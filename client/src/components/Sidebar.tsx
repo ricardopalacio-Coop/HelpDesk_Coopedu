@@ -84,7 +84,6 @@ const navigation = [
         name: "Usuários",
         href: "/settings/usuarios",
         icon: User,
-        inDevelopment: true,
       },
       {
         name: "Perfil do Usuário",
