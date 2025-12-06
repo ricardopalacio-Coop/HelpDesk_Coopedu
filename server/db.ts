@@ -29,6 +29,17 @@ let supabaseSyncApplied = false;
 
 async function ensureMigrations(connectionString: string) {
   if (migrationsApplied) return;
+
+  // Evita executar migrations automaticamente em produção,
+  // a menos que seja explicitamente habilitado.
+  if (
+    ENV.isProduction &&
+    process.env.RUN_MIGRATIONS_ON_START !== "true"
+  ) {
+    migrationsApplied = true;
+    return;
+  }
+
   try {
     const connection = await mysql.createConnection(connectionString);
     const migratorDb = drizzle(connection);
