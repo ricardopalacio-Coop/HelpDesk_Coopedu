@@ -34,6 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Plus, Search, UserRound, Eye, Edit2, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const userFormSchema = z.object({
   id: z.number().optional(),
@@ -59,6 +60,35 @@ function formatPhone(phone?: string | null) {
   return phone.replace(/(\+55)(\d{2})(\d{4,5})(\d{4})/, "+55 ($2) $3-$4");
 }
 
+const toUpper = (value?: string | null) => value?.toUpperCase() ?? "-";
+
+const profileColorMap: Record<string, string> = {
+  ADMINISTRADOR: "bg-red-500/20 text-red-100",
+  ADMIN: "bg-red-500/20 text-red-100",
+  GERENTE: "bg-amber-500/20 text-amber-100",
+  ATENDENTE: "bg-emerald-500/20 text-emerald-100",
+  "USUÁRIO": "bg-slate-500/20 text-slate-100",
+  USUARIO: "bg-slate-500/20 text-slate-100",
+};
+
+const departmentColorClasses: string[] = [
+  "bg-sky-500/20 text-sky-100",
+  "bg-fuchsia-500/20 text-fuchsia-100",
+  "bg-indigo-500/20 text-indigo-100",
+  "bg-emerald-500/20 text-emerald-100",
+  "bg-amber-500/20 text-amber-100",
+  "bg-rose-500/20 text-rose-100",
+  "bg-cyan-500/20 text-cyan-100",
+];
+
+const getDepartmentColor = (departmentName?: string | null) => {
+  if (!departmentName) return "bg-white/20 text-white";
+  const index =
+    departmentName.split("").reduce((acc, char) => acc + char.charCodeAt(0), 0) %
+    departmentColorClasses.length;
+  return departmentColorClasses[index];
+};
+
 async function fileToDataUrl(file: File) {
   return new Promise<string>((resolve, reject) => {
     const reader = new FileReader();
@@ -77,6 +107,8 @@ export default function Usuarios() {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [viewUser, setViewUser] = useState<UserItem | null>(null);
   const [editingUser, setEditingUser] = useState<UserItem | null>(null);
+  const [postCreateModalOpen, setPostCreateModalOpen] = useState(false);
+  const [lastCreatedNickname, setLastCreatedNickname] = useState<string | null>(null);
   const getFriendlyErrorMessage = (message?: string) => {
     if (!message) return "Ocorreu um erro. Tente novamente.";
     const map: Record<string, string> = {
@@ -104,13 +136,14 @@ export default function Usuarios() {
   const departmentsQuery = trpc.departments.list.useQuery();
 
   const createUserMutation = trpc.users.create.useMutation({
-    onSuccess: () => {
+    onSuccess: (created) => {
+      setLastCreatedNickname(created?.nickname ?? created?.fullName ?? "Usuário");
+      setPostCreateModalOpen(true);
       toast({
         title: "Novo usuário criado com sucesso",
         description: "O convite foi enviado para o e-mail informado.",
       });
       usersQuery.refetch();
-      setIsDialogOpen(false);
     },
     onError: (error) => {
       toast({
@@ -374,16 +407,29 @@ export default function Usuarios() {
                             </AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{user.fullName || user.nickname}</p>
-                            <p className="text-sm text-muted-foreground">{user.nickname}</p>
+                            <p className="font-semibold">{toUpper(user.fullName || user.nickname)}</p>
+                            <p className="text-xs text-muted-foreground tracking-wide">
+                              {toUpper(user.nickname)}
+                            </p>
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{user.email ?? "-"}</TableCell>
+                      <TableCell>{toUpper(user.email)}</TableCell>
                       <TableCell>{formatPhone(user.phone)}</TableCell>
-                      <TableCell>{user.departmentName ?? "-"}</TableCell>
                       <TableCell>
-                        <Badge variant="secondary">{user.profileName ?? "—"}</Badge>
+                        <Badge className={cn("border-none", getDepartmentColor(user.departmentName))}>
+                          {toUpper(user.departmentName)}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={cn(
+                            "border-none",
+                            profileColorMap[toUpper(user.profileName)] ?? "bg-white/20 text-white"
+                          )}
+                        >
+                          {toUpper(user.profileName)}
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -487,19 +533,22 @@ export default function Usuarios() {
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <div className="flex flex-col gap-4 md:flex-row">
+              <div className="flex flex-col gap-6 md:flex-row">
                 <FormField
                   control={form.control}
                   name="avatar"
                   render={({ field }) => (
-                    <FormItem className="flex flex-col items-center gap-3 md:w-1/3">
+                    <FormItem className="flex flex-col items-center gap-4 rounded-xl border border-dashed border-slate-200 bg-slate-50/30 p-6 text-center md:w-1/3">
                       <Avatar className="h-20 w-20">
                         {field.value ? <AvatarImage src={field.value} /> : null}
                         <AvatarFallback>
                           {(form.watch("fullName")?.charAt(0) ?? "U").toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <FormLabel className="font-semibold">Avatar</FormLabel>
+                      <div>
+                        <FormLabel className="font-semibold">Avatar</FormLabel>
+                        <p className="text-xs text-muted-foreground">PNG, JPG até 2MB</p>
+                      </div>
                       <FormControl>
                         <Input
                           type="file"
@@ -653,6 +702,41 @@ export default function Usuarios() {
         </DialogContent>
       </Dialog>
 
+      <AlertDialog open={postCreateModalOpen} onOpenChange={setPostCreateModalOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              {lastCreatedNickname
+                ? `O usuário ${lastCreatedNickname.toUpperCase()} foi cadastrado com sucesso!`
+                : "Usuário cadastrado com sucesso!"}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              Deseja cadastrar outro usuário?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex gap-2">
+            <AlertDialogCancel
+              onClick={() => {
+                setPostCreateModalOpen(false);
+                setIsDialogOpen(false);
+                setEditingUser(null);
+              }}
+            >
+              Não
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                setPostCreateModalOpen(false);
+                resetForm(null);
+                setIsDialogOpen(true);
+              }}
+            >
+              Sim
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Dialog
         open={Boolean(viewUser)}
         onOpenChange={(open) => {
@@ -677,14 +761,14 @@ export default function Usuarios() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-semibold">{user.fullName}</h3>
-                  <p className="text-muted-foreground">{user.email}</p>
+                  <h3 className="text-lg font-semibold">{toUpper(user.fullName)}</h3>
+                  <p className="text-muted-foreground">{toUpper(user.email)}</p>
                 </div>
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
                   <p className="text-sm text-muted-foreground">Apelido</p>
-                  <p className="font-medium">{user.nickname || "—"}</p>
+                  <p className="font-medium">{toUpper(user.nickname)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Telefone</p>
@@ -692,11 +776,11 @@ export default function Usuarios() {
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Departamento</p>
-                  <p className="font-medium">{user.departmentName || "—"}</p>
+                  <p className="font-medium">{toUpper(user.departmentName)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Perfil</p>
-                  <p className="font-medium">{user.profileName || "—"}</p>
+                  <p className="font-medium">{toUpper(user.profileName)}</p>
                 </div>
               </div>
             </div>
