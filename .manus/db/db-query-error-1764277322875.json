@@ -1,8 +1,0 @@
-{
-  "query": "UPDATE cooperado_bank_data SET bank_name = 'OWLBANK' WHERE bank_code = '450'",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2hPAEuH5YyprVTa.root --database kgpdAMRP8s25k8w5kNks6w --execute UPDATE cooperado_bank_data SET bank_name = 'OWLBANK' WHERE bank_code = '450'",
-  "returncode": 1,
-  "logs": [
-    "ERROR 1054 (42S22) at line 1: Unknown column 'bank_code' in 'where clause'"
-  ]
-}

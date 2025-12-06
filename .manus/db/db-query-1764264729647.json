@@ -1,9 +1,0 @@
-{
-  "query": "ALTER TABLE cooperados \nADD COLUMN associationDate DATE AFTER admissionDate,\nMODIFY COLUMN status ENUM('ativo', 'inativo', 'sem_producao', 'desligado') NOT NULL DEFAULT 'ativo';",
-  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 2hPAEuH5YyprVTa.root --database kgpdAMRP8s25k8w5kNks6w --execute ALTER TABLE cooperados \nADD COLUMN associationDate DATE AFTER admissionDate,\nMODIFY COLUMN status ENUM('ativo', 'inativo', 'sem_producao', 'desligado') NOT NULL DEFAULT 'ativo';",
-  "rows": [],
-  "messages": [],
-  "stdout": "",
-  "stderr": "",
-  "execution_time_ms": 478
-}
