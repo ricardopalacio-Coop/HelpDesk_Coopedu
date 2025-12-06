@@ -1,112 +1,159 @@
-# 🏠 Guia de Implementação - Rodar Aplicação em Localhost
+# 🏠 Plano de Implementação - Localhost → Produção
 
-> **Objetivo:** Executar o Sistema Helpdesk Coopedu localmente sem interferir na aplicação web em produção.
-
----
-
-## 📋 Visão Geral
-
-O sistema utiliza:
-- **Frontend:** React + Vite + TailwindCSS
-- **Backend:** Node.js + Express + tRPC
-- **Banco de Dados:** MySQL (Drizzle ORM)
-- **Autenticação:** Supabase Auth
-- **Porta padrão:** 3000
+> **Estratégia:** Testar tudo localmente PRIMEIRO, depois subir para web.
 
 ---
 
-## ✅ Checklist de Pré-requisitos
+## 📊 Visão Geral do Plano
 
-| Requisito | Versão Mínima | Verificar Comando |
-|-----------|---------------|-------------------|
-| Node.js | 18.x+ | `node --version` |
-| pnpm | 8.x+ | `pnpm --version` |
-| MySQL | 8.0+ | `mysql --version` |
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                    FLUXO DE IMPLEMENTAÇÃO                       │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│   FASE 1: LOCALHOST          FASE 2: PRODUÇÃO                  │
+│   ─────────────────          ─────────────────                  │
+│                                                                 │
+│   [1] Setup MySQL Local      [7] Deploy Backend                │
+│          ↓                          ↓                          │
+│   [2] Setup Supabase         [8] Configurar Domínio            │
+│          ↓                          ↓                          │
+│   [3] Criar .env             [9] Variáveis de Produção         │
+│          ↓                          ↓                          │
+│   [4] Instalar deps          [10] Migrar Banco                 │
+│          ↓                          ↓                          │
+│   [5] Rodar Migrações        [11] Testes Finais                │
+│          ↓                          ↓                          │
+│   [6] Testar Sistema         [12] Go Live! 🚀                  │
+│                                                                 │
+└─────────────────────────────────────────────────────────────────┘
+```
 
-### Instalar pnpm (se não tiver):
+---
+
+# 🔷 FASE 1: LOCALHOST (Teste Local)
+
+## Status: ⬜ Não Iniciado
+
+---
+
+### ETAPA 1.1: Verificar Pré-requisitos
+
+| Requisito | Versão | Status | Comando |
+|-----------|--------|--------|---------|
+| Node.js | 18+ | ⬜ | `node --version` |
+| pnpm | 8+ | ⬜ | `pnpm --version` |
+| MySQL | 8.0+ | ⬜ | `mysql --version` |
+
+**Instalar pnpm (se não tiver):**
 ```bash
 npm install -g pnpm
 ```
 
 ---
 
-## 🔧 PLANO DE IMPLEMENTAÇÃO
+### ETAPA 1.2: Configurar MySQL Local
 
-### ETAPA 1: Configurar MySQL Local
+**Status:** ⬜ Pendente
 
-#### 1.1 Criar o banco de dados
+#### Opção A: Usar script pronto
+```bash
+mysql -u root -p < setup-database.sql
+```
+> ⚠️ Edite o arquivo antes para alterar a senha!
+
+#### Opção B: Comandos manuais
 ```sql
 -- Conectar ao MySQL
 mysql -u root -p
 
--- Criar banco e usuário
+-- Executar comandos
 CREATE DATABASE helpdesk_coopedu CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'helpdesk_user'@'localhost' IDENTIFIED BY 'SuaSenhaSegura123!';
+CREATE USER 'helpdesk_user'@'localhost' IDENTIFIED BY 'MinhaSenh@Segur@2024';
 GRANT ALL PRIVILEGES ON helpdesk_coopedu.* TO 'helpdesk_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
 
+**Verificar criação:**
+```sql
+mysql -u helpdesk_user -p -e "SHOW DATABASES;"
+```
+
 ---
 
-### ETAPA 2: Criar Arquivo de Ambiente (.env)
+### ETAPA 1.3: Configurar Supabase (Autenticação)
 
-#### 2.1 Criar arquivo `.env` na raiz do projeto:
+**Status:** ⬜ Pendente
+
+#### Passo a passo:
+
+1. ⬜ Acessar [supabase.com/dashboard](https://supabase.com/dashboard)
+2. ⬜ Criar projeto (ou usar existente)
+3. ⬜ Ir em **Settings > API**
+4. ⬜ Copiar credenciais:
+
+| Campo no Supabase | Variável no .env |
+|-------------------|------------------|
+| Project URL | `VITE_SUPABASE_URL` |
+| anon public | `VITE_SUPABASE_PUBLISHABLE_KEY` |
+| service_role | `SUPABASE_SERVICE_KEY` |
+
+---
+
+### ETAPA 1.4: Criar Arquivo .env
+
+**Status:** ⬜ Pendente
+
+Criar arquivo `.env` na **raiz do projeto**:
 
 ```env
-# ============================================
+# =============================================
 # CONFIGURAÇÃO LOCALHOST - HELPDESK COOPEDU
-# ============================================
+# =============================================
 
-# ----------------
-# BANCO DE DADOS
-# ----------------
-DATABASE_URL="mysql://helpdesk_user:SuaSenhaSegura123!@localhost:3306/helpdesk_coopedu"
+# -----------------
+# BANCO DE DADOS (MySQL Local)
+# -----------------
+DATABASE_URL="mysql://helpdesk_user:MinhaSenh@Segur@2024@localhost:3306/helpdesk_coopedu"
 
-# ----------------
+# -----------------
 # SERVIDOR
-# ----------------
+# -----------------
 PORT=3000
 NODE_ENV=development
 
-# ----------------
+# -----------------
 # SEGURANÇA (JWT)
-# ----------------
-# Gere uma chave segura com: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
-JWT_SECRET="sua_chave_jwt_com_no_minimo_32_caracteres_aqui"
+# -----------------
+JWT_SECRET="GERAR_COM_COMANDO_ABAIXO"
 
-# ----------------
+# -----------------
 # SUPABASE (Autenticação)
-# ----------------
-# Obtenha essas credenciais em: https://supabase.com/dashboard
-VITE_SUPABASE_URL="https://seu-projeto.supabase.co"
+# -----------------
+VITE_SUPABASE_URL="https://SEU-PROJETO.supabase.co"
 VITE_SUPABASE_PUBLISHABLE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+SUPABASE_URL="https://SEU-PROJETO.supabase.co"
+SUPABASE_SERVICE_KEY="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
 
-# Backend Supabase (opcional para funções admin)
-SUPABASE_URL="https://seu-projeto.supabase.co"
-SUPABASE_SERVICE_KEY="sua_service_role_key"
-
-# ----------------
+# -----------------
 # APLICAÇÃO
-# ----------------
-VITE_APP_TITLE="Sistema Helpdesk Coopedu"
+# -----------------
+VITE_APP_TITLE="Helpdesk Coopedu - LOCAL"
 OWNER_OPEN_ID="admin"
 OWNER_NAME="Administrador"
 ```
 
-#### 2.2 Como obter credenciais do Supabase:
-
-1. Acesse [supabase.com/dashboard](https://supabase.com/dashboard)
-2. Selecione seu projeto (ou crie um novo)
-3. Vá em **Settings > API**
-4. Copie:
-   - **Project URL** → `VITE_SUPABASE_URL`
-   - **anon/public key** → `VITE_SUPABASE_PUBLISHABLE_KEY`
-   - **service_role key** → `SUPABASE_SERVICE_KEY` (opcional)
+**Gerar JWT_SECRET seguro:**
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
 ---
 
-### ETAPA 3: Instalar Dependências
+### ETAPA 1.5: Instalar Dependências
+
+**Status:** ⬜ Pendente
 
 ```bash
 pnpm install
@@ -114,165 +161,205 @@ pnpm install
 
 ---
 
-### ETAPA 4: Executar Migrações do Banco
+### ETAPA 1.6: Executar Migrações
+
+**Status:** ⬜ Pendente
 
 ```bash
 pnpm db:push
 ```
 
-Este comando:
-- Gera as migrações do Drizzle
-- Cria todas as tabelas no MySQL
+Este comando cria todas as tabelas no MySQL local.
 
 ---
 
-### ETAPA 5: Iniciar o Servidor
+### ETAPA 1.7: Iniciar Servidor Local
 
-#### Opção A: Comando direto
+**Status:** ⬜ Pendente
+
 ```bash
 pnpm dev
 ```
 
-#### Opção B: Script Windows
+Ou use o script:
 ```cmd
 INICIAR.bat
 ```
 
-#### Opção C: Script Linux/macOS
+---
+
+### ETAPA 1.8: Testar Sistema Local
+
+**Status:** ⬜ Pendente
+
+#### Checklist de Testes:
+
+| Teste | Status | Observações |
+|-------|--------|-------------|
+| ⬜ Página carrega em `http://localhost:3000` | | |
+| ⬜ Tela de login aparece | | |
+| ⬜ Login com Supabase funciona | | |
+| ⬜ Dashboard carrega após login | | |
+| ⬜ Menu lateral navega corretamente | | |
+| ⬜ Página Cooperados carrega | | |
+| ⬜ Cadastro de cooperado funciona | | |
+| ⬜ Página Contratos carrega | | |
+| ⬜ Página Departamentos carrega | | |
+| ⬜ Importação CSV funciona | | |
+| ⬜ Exportação Excel funciona | | |
+
+---
+
+# 🔶 FASE 2: PRODUÇÃO (Subir para Web)
+
+## Status: ⬜ Aguardando Fase 1
+
+> ⚠️ **Só iniciar após todos os testes locais passarem!**
+
+---
+
+### ETAPA 2.1: Escolher Plataforma de Deploy
+
+| Plataforma | Tipo | Custo | Recomendado |
+|------------|------|-------|-------------|
+| Zeabur | PaaS | $5+/mês | ✅ Já em uso |
+| Railway | PaaS | $5+/mês | ⭐ Fácil |
+| Render | PaaS | Free tier | ⭐ Gratuito |
+| Vercel | Frontend | Free | Frontend only |
+| VPS (DigitalOcean, etc) | IaaS | $5+/mês | Mais controle |
+
+---
+
+### ETAPA 2.2: Configurar Banco de Dados Produção
+
+**Opções:**
+- ⬜ PlanetScale (MySQL serverless)
+- ⬜ Railway MySQL
+- ⬜ Supabase Postgres (migrar de MySQL)
+- ⬜ MySQL em VPS próprio
+
+---
+
+### ETAPA 2.3: Variáveis de Ambiente Produção
+
+```env
+# PRODUÇÃO - NÃO COMMITAR!
+DATABASE_URL="mysql://user:senha@host-producao:3306/helpdesk_prod"
+NODE_ENV=production
+JWT_SECRET="chave_diferente_da_local"
+VITE_SUPABASE_URL="https://seu-projeto.supabase.co"
+VITE_SUPABASE_PUBLISHABLE_KEY="sua_chave_producao"
+```
+
+---
+
+### ETAPA 2.4: Build e Deploy
+
 ```bash
-chmod +x iniciar.sh
-./iniciar.sh
+# Gerar build de produção
+pnpm build
+
+# O output estará em dist/
 ```
 
 ---
 
-## 🌐 Acessar a Aplicação
+### ETAPA 2.5: Testes em Produção
 
-Após iniciar, acesse:
-
-```
-http://localhost:3000
-```
-
----
-
-## 📊 Comandos Úteis
-
-| Comando | Descrição |
-|---------|-----------|
-| `pnpm dev` | Inicia servidor de desenvolvimento |
-| `pnpm build` | Compila para produção |
-| `pnpm start` | Inicia versão de produção |
-| `pnpm db:push` | Aplica migrações do banco |
-| `pnpm test` | Executa testes |
-| `pnpm check` | Verifica tipos TypeScript |
+| Teste | Status |
+|-------|--------|
+| ⬜ Aplicação acessível via URL | |
+| ⬜ HTTPS funcionando | |
+| ⬜ Login funciona | |
+| ⬜ Dados persistem | |
+| ⬜ Performance aceitável | |
 
 ---
 
-## 🐛 Solução de Problemas
+# 🐛 Solução de Problemas
 
-### Erro: "Supabase não configurado"
+### Erro: Supabase não configurado
 ```
 ❌ ERRO CRÍTICO: Credenciais do Supabase não encontradas!
 ```
-**Solução:** Verifique se o arquivo `.env` existe e contém:
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_PUBLISHABLE_KEY`
+**Causa:** Variáveis `VITE_SUPABASE_URL` ou `VITE_SUPABASE_PUBLISHABLE_KEY` não estão no `.env`
+**Solução:** Verificar arquivo `.env` e reiniciar o servidor
 
-### Erro: "DATABASE_URL is required"
-```
-Error: DATABASE_URL is required to run drizzle commands
-```
-**Solução:** Crie o arquivo `.env` com a variável `DATABASE_URL`
+---
 
 ### Erro: MySQL - Conexão recusada
 ```
 Error: connect ECONNREFUSED 127.0.0.1:3306
 ```
-**Solução:** Inicie o serviço MySQL:
-```bash
-# Windows
+**Causa:** MySQL não está rodando
+**Solução Windows:**
+```cmd
 net start MySQL80
-
-# Linux
-sudo systemctl start mysql
 ```
 
-### Erro: Porta 3000 em uso
+---
+
+### Erro: DATABASE_URL não encontrada
 ```
-Error: listen EADDRINUSE: address already in use :::3000
+Error: DATABASE_URL is required
 ```
-**Solução:** O sistema automaticamente tentará outra porta, ou altere no `.env`:
+**Causa:** Arquivo `.env` não existe ou variável não está definida
+**Solução:** Criar/verificar arquivo `.env`
+
+---
+
+### Erro: Porta em uso
+```
+Error: listen EADDRINUSE :::3000
+```
+**Causa:** Outra aplicação usando a porta 3000
+**Solução:** O sistema tentará automaticamente a próxima porta, ou altere:
 ```env
 PORT=3001
 ```
 
 ---
 
-## 🔒 Notas de Segurança
-
-⚠️ **IMPORTANTE:**
-
-1. **NUNCA** comite o arquivo `.env` no Git
-2. Use senhas fortes e diferentes para cada ambiente
-3. O arquivo `.env` já está no `.gitignore`
-4. Para produção, use variáveis de ambiente do sistema
-
----
-
-## 📁 Estrutura Relevante
-
-```
-HelpDesk_Coopedu/
-├── .env                    # ⚠️ CRIAR (variáveis de ambiente)
-├── client/                 # Frontend React
-│   └── src/
-│       └── integrations/
-│           └── supabase/   # Configuração Supabase
-├── server/                 # Backend Express + tRPC
-│   └── _core/
-│       └── env.ts          # Leitura das variáveis
-├── drizzle/                # Schema e migrações MySQL
-├── INICIAR.bat             # Script Windows
-├── iniciar.sh              # Script Linux/macOS
-└── package.json            # Scripts npm/pnpm
-```
-
----
-
-## ✨ Resumo Rápido
+# 📋 Resumo de Comandos
 
 ```bash
-# 1. Configurar MySQL
-mysql -u root -p < setup-database.sql
+# === SETUP INICIAL ===
+pnpm install              # Instalar dependências
+pnpm db:push              # Criar tabelas no banco
 
-# 2. Criar .env (copiar modelo acima)
+# === DESENVOLVIMENTO ===
+pnpm dev                  # Iniciar servidor local
+# Acesse: http://localhost:3000
 
-# 3. Instalar dependências
-pnpm install
+# === PRODUÇÃO ===
+pnpm build                # Gerar build
+pnpm start                # Iniciar em modo produção
 
-# 4. Executar migrações
-pnpm db:push
-
-# 5. Iniciar
-pnpm dev
-
-# 6. Acessar
-# http://localhost:3000
+# === UTILITÁRIOS ===
+pnpm check                # Verificar TypeScript
+pnpm test                 # Executar testes
 ```
 
 ---
 
-## 📞 Próximos Passos
+# ✅ Progresso Geral
 
-Após conseguir rodar localmente:
-
-- [ ] Testar login com Supabase
-- [ ] Verificar conexão com MySQL
-- [ ] Importar dados de teste (CSV)
-- [ ] Explorar funcionalidades do sistema
+| Fase | Etapa | Descrição | Status |
+|------|-------|-----------|--------|
+| 1 | 1.1 | Pré-requisitos | ⬜ |
+| 1 | 1.2 | MySQL Local | ⬜ |
+| 1 | 1.3 | Supabase | ⬜ |
+| 1 | 1.4 | Arquivo .env | ⬜ |
+| 1 | 1.5 | Dependências | ⬜ |
+| 1 | 1.6 | Migrações | ⬜ |
+| 1 | 1.7 | Iniciar Local | ⬜ |
+| 1 | 1.8 | Testes Locais | ⬜ |
+| 2 | 2.1 | Plataforma Deploy | ⬜ |
+| 2 | 2.2 | Banco Produção | ⬜ |
+| 2 | 2.3 | Variáveis Prod | ⬜ |
+| 2 | 2.4 | Build/Deploy | ⬜ |
+| 2 | 2.5 | Testes Prod | ⬜ |
 
 ---
 
 **Última atualização:** Dezembro 2025
-
